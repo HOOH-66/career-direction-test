@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文科生职业方向分析测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #5B4FC4;
+            --primary-light: #7B6FD4;
+            --primary-dark: #3D35A0;
+            --secondary: #8B5CF6;
+            --accent: #A78BFA;
+            --bg: #F5F3FF;
+            --bg-card: #FFFFFF;
+            --text: #1F2937;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --gradient: linear-gradient(135deg, #5B4FC4 0%, #8B5CF6 50%, #A78BFA 100%);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        /* Progress Bar */
+        .progress-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 0 0 15px 15px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        /* Question Card */
+        .question-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 4px 20px rgba(91,79,196,0.08);
+            margin: 20px 0;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .question-section {
+            display: inline-block;
+            background: var(--bg);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .question-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            line-height: 1.8;
+        }
+        .question-number {
+            color: var(--primary);
+            font-weight: 700;
+        }
+        /* Options */
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: white;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            line-height: 1.5;
+        }
+        .option-btn:hover {
+            border-color: var(--primary-light);
+            background: var(--bg);
+        }
+        .option-btn.selected {
+            border-color: var(--primary);
+            background: #EDE9FE;
+            color: var(--primary-dark);
+            font-weight: 500;
+        }
+        /* Input styles */
+        .input-group { margin-bottom: 15px; }
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        .input-field:focus {
+            border-color: var(--primary);
+        }
+        select.input-field {
+            appearance: none;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 16px center;
+        }
+        /* Multi-select tags */
+        .tag-container { display: flex; flex-wrap: wrap; gap: 10px; }
+        .tag-btn {
+            padding: 8px 16px;
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .tag-btn.selected {
+            border-color: var(--primary);
+            background: #EDE9FE;
+            color: var(--primary-dark);
+        }
+        /* Navigation */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-prev {
+            background: var(--bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+        .btn-prev:hover { background: var(--border); }
+        .btn-next {
+            background: var(--gradient);
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+        .btn-next:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white;
+            flex: 1;
+            max-width: 200px;
+        }
+        .btn-submit:hover { opacity: 0.9; }
+        /* Landing Page */
+        .landing { text-align: center; padding: 40px 20px; }
+        .landing h2 { font-size: 1.5rem; margin-bottom: 20px; color: var(--primary-dark); }
+        .landing p { color: var(--text-light); margin-bottom: 30px; line-height: 1.8; }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .feature-item {
+            padding: 20px;
+            background: var(--bg);
+            border-radius: 15px;
+            text-align: center;
+        }
+        .feature-item .icon { font-size: 2rem; margin-bottom: 10px; }
+        .feature-item h4 { color: var(--primary); margin-bottom: 5px; }
+        .btn-start {
+            background: var(--gradient);
+            color: white;
+            padding: 16px 50px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(91,79,196,0.3);
+        }
+        .btn-start:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(91,79,196,0.4); }
+        /* Report Styles */
+        .report-container { display: none; }
+        .report-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(91,79,196,0.08);
+        }
+        .report-section h2 {
+            color: var(--primary-dark);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg);
+        }
+        .report-section h3 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin: 15px 0 10px;
+        }
+        .career-card {
+            border: 2px solid var(--border);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+        .career-card:hover { transform: translateY(-2px); }
+        .career-card .rank {
+            display: inline-block;
+            background: var(--gradient);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+        .career-card .match-score {
+            float: right;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .career-card .career-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: inline;
+        }
+        .career-detail { margin-top: 15px; color: var(--text-light); line-height: 1.8; }
+        .career-detail p { margin-bottom: 8px; }
+        .career-tag {
+            display: inline-block;
+            background: var(--bg);
+            color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+        .salary-bar {
+            height: 24px;
+            background: var(--bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 8px 0;
+            position: relative;
+        }
+        .salary-fill {
+            height: 100%;
+            background: var(--gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .radar-chart-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .action-list {
+            list-style: none;
+            padding: 0;
+        }
+        .action-list li {
+            padding: 12px 15px;
+            border-left: 3px solid var(--primary);
+            margin-bottom: 10px;
+            background: var(--bg);
+            border-radius: 0 10px 10px 0;
+        }
+        .action-list li strong { color: var(--primary-dark); }
+        .print-btn {
+            display: block;
+            margin: 30px auto;
+            padding: 15px 40px;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .header { padding: 30px 15px; border-radius: 0 0 20px 20px; }
+            .header h1 { font-size: 1.5rem; }
+            .question-card { padding: 25px 20px; }
+            .question-title { font-size: 1.05rem; }
+            .nav-buttons { flex-direction: column; }
+            .btn-next, .btn-submit { max-width: 100%; }
+        }
+        @media print {
+            .progress-wrapper, .nav-buttons, .print-btn { display: none !important; }
+            .report-section { break-inside: avoid; box-shadow: none; border: 1px solid #ddd; }
+        }
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .loading-overlay.active { display: flex; }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { margin-top: 20px; color: var(--primary); font-weight: 600; }
+        .hidden { display: none !important; }
+        /* Likert scale */
+        .likert-scale {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+        }
+        .likert-scale .label-left, .likert-scale .label-right {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            max-width: 80px;
+            text-align: center;
+        }
+        .likert-options {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .likert-btn {
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .likert-btn:hover { border-color: var(--primary-light); background: var(--bg); }
+        .likert-btn.selected { border-color: var(--primary); background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">正在生成您的职业分析报告...</p>
+    </div>
+
+    <div class="header">
+        <h1>文科生职业方向分析测试</h1>
+        <p>160道题 · 深度职业匹配 · 专业报告</p>
+    </div>
+
+    <div class="progress-wrapper hidden" id="progressWrapper">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="progress-text">
+            <span id="progressSection">第一部分：基本信息</span>
+            <span id="progressCount">0/160</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Landing Page -->
+        <div id="landingPage" class="landing">
+            <h2>发现最适合你的职业方向</h2>
+            <p>本测试基于职业心理学理论，通过160道精心设计的题目，<br>从能力、性格、价值观、行业兴趣等多个维度，<br>为你生成一份详细的职业发展方向报告。</p>
+            <div class="features">
+                <div class="feature-item">
+                    <div class="icon">📊</div>
+                    <h4>多维评估</h4>
+                    <p>7大维度全面分析</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">🎯</div>
+                    <h4>精准匹配</h4>
+                    <p>30+职业方向模型</p>
+                </div>
+                <div class="feature-item">
+                    <div class="icon">📋</div>
+                    <h4>详细报告</h4>
+                    <p>个性化发展建议</p>
+                </div>
+            </div>
+            <button class="btn-start" onclick="startTest()">开始测试</button>
+            <p style="margin-top: 20px; font-size: 0.85rem; color: var(--text-light);">预计用时 20-30 分钟</p>
+        </div>
+
+        <!-- Question Area -->
+        <div id="questionArea" class="hidden">
+            <div class="question-card" id="questionCard">
+                <!-- Dynamic content -->
+            </div>
+            <div class="nav-buttons">
+                <button class="btn btn-prev" id="btnPrev" onclick="prevQuestion()">上一题</button>
+                <button class="btn btn-next" id="btnNext" onclick="nextQuestion()">下一题</button>
+            </div>
+        </div>
+
+        <!-- Report Area -->
+        <div id="reportArea" class="report-container">
+            <!-- Dynamic report content -->
+        </div>
+    </div>
+
+    <script>
+    // ====== 全局状态 ======
+    let currentQuestion = 0;
+    let answers = {};
+    const TOTAL_QUESTIONS = 160;
+
+    // ====== 题库数据 ======
+    const questions = [
+    // ===== 第一部分：用户基本信息收集（10题）=====
+    {id:1, section:"基本信息", type:"select", title:"您的最高学历层次是？", options:["专科","本科","硕士","博士"]},
+    {id:1001, section:"基本信息", type:"select", title:"您最高学历对应的学校层次是？", options:["985/双一流A类","211/双一流B类","普通一本（省属重点）","普通二本","民办本科/独立学院","专科/高职","海外QS前50","海外QS 50-100","海外QS 100-200","海外其他院校"]},
+    {id:1002, section:"基本信息", type:"select", title:"（如为硕士/博士）您的本科学校层次是？（本科即最高学历请选'不适用'）", options:["不适用","985/双一流A类","211/双一流B类","普通一本（省属重点）","普通二本","民办本科/独立学院","专科/高职","海外QS前50","海外QS 50-100","海外QS 100-200","海外其他院校"]},
+    {id:2, section:"基本信息", type:"select", title:"您的专业大类是？", options:["文学类（中文/汉语言文学/比较文学/古典文献学）","语言类（英语/日语/法语/德语/西班牙语/翻译/其他小语种）","新闻传播类（新闻学/传播学/广告学/编辑出版/网络与新媒体）","法学类（法学/知识产权/国际法）","教育类（教育学/学前教育/特殊教育/教育技术）","历史哲学类（历史学/哲学/考古学/文物保护）","管理类（工商管理/人力资源/行政管理/公共管理/旅游管理/会计学）","经济类（经济学/国际经济与贸易/金融学/财政学）","社会学类（社会学/社会工作/人类学/心理学）","政治学类（政治学/国际关系/外交学）","艺术类（艺术管理/文化产业管理）","其他文科"]},
+    {id:201, section:"基本信息", type:"select", title:"您是否有留学背景？", options:["否","是，本科留学","是，硕士留学","是，博士留学"]},
+    {id:202, section:"基本信息", type:"select", title:"（如有留学背景）留学国家/地区是？", options:["不适用","北美（美国/加拿大）","英国/爱尔兰","欧洲大陆（法/德/荷等）","澳洲/新西兰","亚洲（日/韩/新加坡/香港）","其他地区"]},
+    {id:203, section:"基本信息", type:"select", title:"（如有留学背景）是否有海外工作经验？", options:["不适用","无海外工作经验","有实习经验（6个月以内）","有正式工作经验（6个月以上）"]},
+    {id:3, section:"基本信息", type:"select", title:"您目前所在或期望工作的城市级别是？", options:["一线城市（北上广深）","新一线城市（杭州、成都、武汉等）","二线城市","三线及以下城市","暂无偏好"]},
+    {id:4, section:"基本信息", type:"select", title:"您期望的月薪范围是？", options:["5000以下","5000-8000","8000-12000","12000-20000","20000-30000","30000以上"]},
+    {id:5, section:"基本信息", type:"select", title:"您目前的工作经验年限是？", options:["应届/在校生","1-2年","3-5年","5-10年","10年以上"]},
+    {id:6, section:"基本信息", type:"select", title:"您对加班的接受程度是？", options:["完全不接受加班","偶尔可以（每月不超过3天）","适度接受（每周1-2天）","可以接受较高强度加班"]},
+    {id:7, section:"基本信息", type:"select", title:"您对出差的接受程度是？", options:["完全不接受","可接受短期出差（每月1-2次）","可接受频繁出差","无所谓，出差多少都行"]},
+    {id:8, section:"基本信息", type:"select", title:"您对工作稳定性的期望是？", options:["非常看重稳定，不愿冒险","较看重稳定，但可接受适度变化","喜欢有一定挑战和变化","热爱变化，讨厌一成不变"]},
+    {id:9, section:"基本信息", type:"select", title:"您是否考虑进入体制内（公务员/事业单位）？", options:["非常想进体制内","可以考虑","无所谓","不考虑，更倾向市场化岗位"]},
+    {id:301, section:"基本信息-家庭情况", type:"select", title:"您的家庭经济状况如何？是否有经济压力需要尽快就业？", options:["家庭经济宽裕，无就业压力","经济一般，希望1年内就业","有一定经济压力，需要尽快就业","经济压力较大，急需工作收入"]},
+    {id:302, section:"基本信息-家庭情况", type:"select", title:"您的家庭所在城市/户籍属于哪个级别？", options:["一线城市（北上广深）","新一线城市","二线城市","三线及以下城市","海外"]},
+    {id:303, section:"基本信息-家庭情况", type:"select", title:"您的家庭是否有相关行业资源或人脉？", options:["有较丰富的行业资源和人脉","有一些相关领域的关系","基本没有相关资源","完全没有，需要从零开始"]},
+    {id:304, section:"基本信息-家庭情况", type:"select", title:"家庭对您的职业选择有什么期望？", options:["希望进入体制内（公务员/事业单位/国企）","希望从事高薪行业","希望自由发展，支持我的选择","无特别要求"]},
+    {id:305, section:"基本信息-家庭情况", type:"select", title:"您是否需要照顾家人（影响工作地点选择）？", options:["不需要，工作地点完全自由","短期内不需要，但未来可能需要回家乡","需要在家人附近城市工作","需要留在家乡照顾家人"]},
+    {id:10, section:"基本信息", type:"multi", title:"请选择您感兴趣的领域（可多选，建议选3-8个）：", options:["写作/创作","阅读/研究","数据分析","社交/networking","公共演讲","视觉设计","视频/短视频","运营/策划","谈判/销售","教学/培训","心理咨询","法律实务","政策研究","国际事务","文化遗产","品牌策略","投资理财","社会公益","科技产品","内容创业","项目管理","人际调解"]},
+    // ===== 第二部分：个人能力评估（30题）=====
+    {id:11, section:"能力评估", type:"likert", title:"我能够清晰、流畅地在众人面前发表演讲或做报告。", dimension:"oral_expression", labels:["完全不符合","非常符合"]},
+    {id:12, section:"能力评估", type:"likert", title:"我擅长用文字表达复杂的想法，写出逻辑清楚、文采出色的文章。", dimension:"written_expression", labels:["完全不符合","非常符合"]},
+    {id:13, section:"能力评估", type:"likert", title:"在小组讨论中，我经常能用恰当的措辞说服他人接受我的观点。", dimension:"oral_expression", labels:["完全不符合","非常符合"]},
+    {id:14, section:"能力评估", type:"likert", title:"面对大量信息时，我能快速提炼出核心要点并形成结构化总结。", dimension:"written_expression", labels:["完全不符合","非常符合"]},
+    {id:15, section:"能力评估", type:"likert", title:"我善于发现事物之间的因果关系，能够进行多步骤的逻辑推理。", dimension:"logic", labels:["完全不符合","非常符合"]},
+    {id:16, section:"能力评估", type:"likert", title:"我能够快速识别论证中的逻辑漏洞或自相矛盾之处。", dimension:"logic", labels:["完全不符合","非常符合"]},
+    {id:17, section:"能力评估", type:"likert", title:"面对分歧时，我能够理解对方的立场并找到双方都能接受的方案。", dimension:"interpersonal", labels:["完全不符合","非常符合"]},
+    {id:18, section:"能力评估", type:"likert", title:"我能敏锐地察觉他人的情绪变化，并做出恰当的回应。", dimension:"interpersonal", labels:["完全不符合","非常符合"]},
+    {id:19, section:"能力评估", type:"likert", title:"我在认识新朋友或拓展人脉方面感到轻松自如。", dimension:"interpersonal", labels:["完全不符合","非常符合"]},
+    {id:20, section:"能力评估", type:"likert", title:"我经常能想出别人意想不到的创意或解决方案。", dimension:"creativity", labels:["完全不符合","非常符合"]},
+    {id:21, section:"能力评估", type:"likert", title:"我喜欢通过联想、类比等方式将不同领域的知识组合出新想法。", dimension:"creativity", labels:["完全不符合","非常符合"]},
+    {id:22, section:"能力评估", type:"likert", title:"我对数字敏感，能够从表格和数据中发现趋势和规律。", dimension:"data_analysis", labels:["完全不符合","非常符合"]},
+    {id:23, section:"能力评估", type:"likert", title:"我能熟练使用Excel等工具进行基础的数据整理和分析。", dimension:"data_analysis", labels:["完全不符合","非常符合"]},
+    {id:24, section:"能力评估", type:"likert", title:"面对一个复杂项目，我能合理分配任务并协调各方资源推进完成。", dimension:"organization", labels:["完全不符合","非常符合"]},
+    {id:25, section:"能力评估", type:"likert", title:"我擅长制定计划和时间表，并能确保按时完成目标。", dimension:"organization", labels:["完全不符合","非常符合"]},
+    {id:26, section:"能力评估", type:"likert", title:"在高压环境下，我仍然能保持冷静并做出正确的判断。", dimension:"stress_tolerance", labels:["完全不符合","非常符合"]},
+    {id:27, section:"能力评估", type:"likert", title:"面对连续的挫折和失败，我能快速调整心态重新出发。", dimension:"stress_tolerance", labels:["完全不符合","非常符合"]},
+    {id:28, section:"能力评估", type:"likert", title:"我能够快速学习和掌握新的知识或技能。", dimension:"learning", labels:["完全不符合","非常符合"]},
+    {id:29, section:"能力评估", type:"likert", title:"面对全新的环境或领域，我能迅速适应并找到自己的节奏。", dimension:"learning", labels:["完全不符合","非常符合"]},
+    {id:30, section:"能力评估", type:"likert", title:"在团队中我倾向于主动承担领导角色，引导他人完成目标。", dimension:"leadership", labels:["完全不符合","非常符合"]},
+    {id:31, section:"能力评估", type:"likert", title:"我能够有效地激励和鼓舞团队成员，提升团队士气。", dimension:"leadership", labels:["完全不符合","非常符合"]},
+    {id:32, section:"能力评估", type:"likert", title:"我做事注重细节，很少因为粗心而出错。", dimension:"detail", labels:["完全不符合","非常符合"]},
+    {id:33, section:"能力评估", type:"likert", title:"我在审阅文档或材料时，能迅速发现错别字或格式问题。", dimension:"detail", labels:["完全不符合","非常符合"]},
+    {id:34, section:"能力评估", type:"likert", title:"我能用简洁的语言将专业知识解释给非专业人士听。", dimension:"oral_expression", labels:["完全不符合","非常符合"]},
+    {id:35, section:"能力评估", type:"likert", title:"我写的报告或方案多次获得上级或老师的肯定。", dimension:"written_expression", labels:["完全不符合","非常符合"]},
+    {id:36, section:"能力评估", type:"likert", title:"我能够对复杂问题进行系统性拆解，找到解决问题的突破口。", dimension:"logic", labels:["完全不符合","非常符合"]},
+    {id:37, section:"能力评估", type:"likert", title:"我善于协调不同性格的人一起合作完成任务。", dimension:"organization", labels:["完全不符合","非常符合"]},
+    {id:38, section:"能力评估", type:"likert", title:"面对多个紧急任务同时出现，我能快速排列优先级并执行。", dimension:"stress_tolerance", labels:["完全不符合","非常符合"]},
+    {id:39, section:"能力评估", type:"likert", title:"我对新技术、新工具充满好奇，愿意花时间去学习掌握。", dimension:"learning", labels:["完全不符合","非常符合"]},
+    {id:40, section:"能力评估", type:"likert", title:"我在工作中更关注整体质量而非速度，追求精益求精。", dimension:"detail", labels:["完全不符合","非常符合"]},
+    // ===== 第三部分：性格与工作风格（30题）=====
+    {id:41, section:"性格与工作风格", type:"likert", title:"参加社交聚会后我需要较长时间的独处来恢复精力。", dimension:"introversion", labels:["完全不符合","非常符合"]},
+    {id:42, section:"性格与工作风格", type:"likert", title:"我更喜欢通过面对面交流而非文字来处理工作事务。", dimension:"extraversion", labels:["完全不符合","非常符合"]},
+    {id:43, section:"性格与工作风格", type:"likert", title:"在需要集中注意力的工作中，我偏好安静独立的环境。", dimension:"introversion", labels:["完全不符合","非常符合"]},
+    {id:44, section:"性格与工作风格", type:"likert", title:"我享受与不同的人互动，每天接触新面孔让我充满活力。", dimension:"extraversion", labels:["完全不符合","非常符合"]},
+    {id:45, section:"性格与工作风格", type:"likert", title:"比起团队讨论，我更擅长独自深入思考后给出完整方案。", dimension:"independent", labels:["完全不符合","非常符合"]},
+    {id:46, section:"性格与工作风格", type:"likert", title:"我认为团队合作能产生比个人更好的成果。", dimension:"teamwork", labels:["完全不符合","非常符合"]},
+    {id:47, section:"性格与工作风格", type:"likert", title:"我喜欢有明确流程和规范的工作方式。", dimension:"structured", labels:["完全不符合","非常符合"]},
+    {id:48, section:"性格与工作风格", type:"likert", title:"我更喜欢灵活安排自己的工作时间和方式。", dimension:"flexible", labels:["完全不符合","非常符合"]},
+    {id:49, section:"性格与工作风格", type:"likert", title:"面对不确定性，我倾向于等待更多信息再做决定。", dimension:"risk_averse", labels:["完全不符合","非常符合"]},
+    {id:50, section:"性格与工作风格", type:"likert", title:"我愿意为了高回报而承担较大的职业风险。", dimension:"risk_seeking", labels:["完全不符合","非常符合"]},
+    {id:51, section:"性格与工作风格", type:"likert", title:"获得权力和影响力是我职业追求的重要动力。", dimension:"power_motive", labels:["完全不符合","非常符合"]},
+    {id:52, section:"性格与工作风格", type:"likert", title:"建立良好的同事关系和团队氛围对我来说非常重要。", dimension:"affiliation_motive", labels:["完全不符合","非常符合"]},
+    {id:53, section:"性格与工作风格", type:"likert", title:"我追求在专业领域达到卓越水平，不断突破自我。", dimension:"achievement_motive", labels:["完全不符合","非常符合"]},
+    {id:54, section:"性格与工作风格", type:"likert", title:"做决定时我更依赖数据和逻辑分析而非直觉。", dimension:"rational_decision", labels:["完全不符合","非常符合"]},
+    {id:55, section:"性格与工作风格", type:"likert", title:"我经常凭第一感觉做出判断，且结果通常不错。", dimension:"intuitive_decision", labels:["完全不符合","非常符合"]},
+    {id:56, section:"性格与工作风格", type:"likert", title:"我喜欢按照既定计划行事，临时变动会让我不舒服。", dimension:"structured", labels:["完全不符合","非常符合"]},
+    {id:57, section:"性格与工作风格", type:"likert", title:"我能在开放、模糊的任务中找到方向并自主推进。", dimension:"flexible", labels:["完全不符合","非常符合"]},
+    {id:58, section:"性格与工作风格", type:"likert", title:"我倾向于在一个领域深耕细作而非涉猎多个方向。", dimension:"depth_focus", labels:["完全不符合","非常符合"]},
+    {id:59, section:"性格与工作风格", type:"likert", title:"我喜欢同时参与多个不同类型的项目保持新鲜感。", dimension:"variety_seeking", labels:["完全不符合","非常符合"]},
+    {id:60, section:"性格与工作风格", type:"likert", title:"工作中我更看重过程的合规性而非最终结果。", dimension:"process_oriented", labels:["完全不符合","非常符合"]},
+    {id:61, section:"性格与工作风格", type:"likert", title:"我享受竞争的感觉，竞争能激发我的最佳表现。", dimension:"competitive", labels:["完全不符合","非常符合"]},
+    {id:62, section:"性格与工作风格", type:"likert", title:"我更喜欢和谐共赢的环境，避免与人产生直接冲突。", dimension:"affiliation_motive", labels:["完全不符合","非常符合"]},
+    {id:63, section:"性格与工作风格", type:"likert", title:"在工作中我倾向于主动争取机会而非等待被分配。", dimension:"proactive", labels:["完全不符合","非常符合"]},
+    {id:64, section:"性格与工作风格", type:"likert", title:"我喜欢有清晰KPI的工作，这样我知道自己做得怎么样。", dimension:"structured", labels:["完全不符合","非常符合"]},
+    {id:65, section:"性格与工作风格", type:"likert", title:"我认为人际关系网络对职业成功至关重要。", dimension:"extraversion", labels:["完全不符合","非常符合"]},
+    {id:66, section:"性格与工作风格", type:"likert", title:"比起创新，我更擅长优化和完善已有的方案。", dimension:"process_oriented", labels:["完全不符合","非常符合"]},
+    {id:67, section:"性格与工作风格", type:"likert", title:"我在截止日期的压力下反而更有效率。", dimension:"stress_work", labels:["完全不符合","非常符合"]},
+    {id:68, section:"性格与工作风格", type:"likert", title:"我希望我的工作能让我不断学习新知识。", dimension:"achievement_motive", labels:["完全不符合","非常符合"]},
+    {id:69, section:"性格与工作风格", type:"likert", title:"在做重大决策前我会详细列出利弊清单。", dimension:"rational_decision", labels:["完全不符合","非常符合"]},
+    {id:70, section:"性格与工作风格", type:"likert", title:"我更倾向于担任幕后的策划角色而非台前的执行角色。", dimension:"introversion", labels:["完全不符合","非常符合"]},
+    // ===== 第四部分：职业价值观（25题）=====
+    {id:71, section:"职业价值观", type:"likert", title:"高薪是我选择工作时最优先考虑的因素。", dimension:"val_salary", labels:["完全不同意","完全同意"]},
+    {id:72, section:"职业价值观", type:"likert", title:"我愿意为了更高的薪水接受不太喜欢的工作内容。", dimension:"val_salary", labels:["完全不同意","完全同意"]},
+    {id:73, section:"职业价值观", type:"likert", title:"我认为准时下班、拥有充足的个人时间比升职加薪更重要。", dimension:"val_balance", labels:["完全不同意","完全同意"]},
+    {id:74, section:"职业价值观", type:"likert", title:"我希望工作不会过多侵占我的周末和假期。", dimension:"val_balance", labels:["完全不同意","完全同意"]},
+    {id:75, section:"职业价值观", type:"likert", title:"在亲友面前能自豪地介绍自己的工作对我很重要。", dimension:"val_status", labels:["完全不同意","完全同意"]},
+    {id:76, section:"职业价值观", type:"likert", title:"我希望从事的职业具有较高的社会声望和认可度。", dimension:"val_status", labels:["完全不同意","完全同意"]},
+    {id:77, section:"职业价值观", type:"likert", title:"我更看重一份工作能给我带来多少成长空间和学习机会。", dimension:"val_growth", labels:["完全不同意","完全同意"]},
+    {id:78, section:"职业价值观", type:"likert", title:"如果一份工作无法让我进步，即使待遇好我也会考虑离开。", dimension:"val_growth", labels:["完全不同意","完全同意"]},
+    {id:79, section:"职业价值观", type:"likert", title:"我希望我的工作不受经济周期影响，有稳定的收入保障。", dimension:"val_stability", labels:["完全不同意","完全同意"]},
+    {id:80, section:"职业价值观", type:"likert", title:"比起高风险高收益的创业，我更倾向稳定的雇佣关系。", dimension:"val_stability", labels:["完全不同意","完全同意"]},
+    {id:81, section:"职业价值观", type:"likert", title:"我希望我的工作能对社会或他人产生积极的影响。", dimension:"val_contribution", labels:["完全不同意","完全同意"]},
+    {id:82, section:"职业价值观", type:"likert", title:"我愿意接受较低的薪水去做有社会意义的工作。", dimension:"val_contribution", labels:["完全不同意","完全同意"]},
+    {id:83, section:"职业价值观", type:"likert", title:"我希望在工作中拥有高度的自主权，自己决定做什么和怎么做。", dimension:"val_autonomy", labels:["完全不同意","完全同意"]},
+    {id:84, section:"职业价值观", type:"likert", title:"被过多的规章制度束缚会让我感到窒息。", dimension:"val_autonomy", labels:["完全不同意","完全同意"]},
+    {id:85, section:"职业价值观", type:"likert", title:"我希望工作能让我发挥创造力，产出有个人风格的成果。", dimension:"val_creativity", labels:["完全不同意","完全同意"]},
+    {id:86, section:"职业价值观", type:"likert", title:"重复性、机械性的工作即使收入高也会让我感到痛苦。", dimension:"val_creativity", labels:["完全不同意","完全同意"]},
+    {id:87, section:"职业价值观", type:"likert", title:"我认为工作最重要的是让我感到快乐和满足。", dimension:"val_balance", labels:["完全不同意","完全同意"]},
+    {id:88, section:"职业价值观", type:"likert", title:"我愿意牺牲短期收入来换取更好的长期职业发展。", dimension:"val_growth", labels:["完全不同意","完全同意"]},
+    {id:89, section:"职业价值观", type:"likert", title:"我认为工作中的人际关系质量比工作内容本身更重要。", dimension:"val_contribution", labels:["完全不同意","完全同意"]},
+    {id:90, section:"职业价值观", type:"likert", title:"如果可以自由选择，我希望能够远程办公。", dimension:"val_autonomy", labels:["完全不同意","完全同意"]},
+    {id:91, section:"职业价值观", type:"likert", title:"我看重公司的品牌和知名度，希望在大平台工作。", dimension:"val_status", labels:["完全不同意","完全同意"]},
+    {id:92, section:"职业价值观", type:"likert", title:"我期望我的工作成果能被更多人看到和使用。", dimension:"val_creativity", labels:["完全不同意","完全同意"]},
+    {id:93, section:"职业价值观", type:"likert", title:"退休保障和福利制度是我评估工作的重要标准。", dimension:"val_stability", labels:["完全不同意","完全同意"]},
+    {id:94, section:"职业价值观", type:"likert", title:"我希望通过工作获得行业内的专业影响力。", dimension:"val_status", labels:["完全不同意","完全同意"]},
+    {id:95, section:"职业价值观", type:"likert", title:"薪资增长空间比起始薪资对我更有吸引力。", dimension:"val_salary", labels:["完全不同意","完全同意"]},
+    // ===== 第五部分：行业兴趣与认知（25题）=====
+    {id:96, section:"行业兴趣", type:"likert", title:"我对教书育人、帮助学生成长感到有成就感。", dimension:"ind_education", labels:["完全没兴趣","非常有兴趣"]},
+    {id:97, section:"行业兴趣", type:"likert", title:"我对开发课程、设计培训方案很感兴趣。", dimension:"ind_education", labels:["完全没兴趣","非常有兴趣"]},
+    {id:98, section:"行业兴趣", type:"likert", title:"我喜欢追踪热点事件，对新闻采编和内容创作充满热情。", dimension:"ind_media", labels:["完全没兴趣","非常有兴趣"]},
+    {id:99, section:"行业兴趣", type:"likert", title:"我对运营社交媒体账号、做短视频或图文内容很感兴趣。", dimension:"ind_media", labels:["完全没兴趣","非常有兴趣"]},
+    {id:100, section:"行业兴趣", type:"likert", title:"研究法律条文、分析案例让我觉得有趣而非枯燥。", dimension:"ind_law", labels:["完全没兴趣","非常有兴趣"]},
+    {id:101, section:"行业兴趣", type:"likert", title:"我对合规管理、风险防控等工作内容很有兴趣。", dimension:"ind_law", labels:["完全没兴趣","非常有兴趣"]},
+    {id:102, section:"行业兴趣", type:"likert", title:"我向往公务员或事业单位稳定的工作环境和福利待遇。", dimension:"ind_gov", labels:["完全没兴趣","非常有兴趣"]},
+    {id:103, section:"行业兴趣", type:"likert", title:"我对参与公共政策制定或政务管理感兴趣。", dimension:"ind_gov", labels:["完全没兴趣","非常有兴趣"]},
+    {id:104, section:"行业兴趣", type:"likert", title:"我对企业的人才管理、组织发展等方向感兴趣。", dimension:"ind_hr", labels:["完全没兴趣","非常有兴趣"]},
+    {id:105, section:"行业兴趣", type:"likert", title:"我喜欢研究如何提升组织效率和员工满意度。", dimension:"ind_hr", labels:["完全没兴趣","非常有兴趣"]},
+    {id:106, section:"行业兴趣", type:"likert", title:"我对市场调研、品牌策划和消费者心理很着迷。", dimension:"ind_marketing", labels:["完全没兴趣","非常有兴趣"]},
+    {id:107, section:"行业兴趣", type:"likert", title:"我喜欢策划营销活动，看到方案落地产生效果让我兴奋。", dimension:"ind_marketing", labels:["完全没兴趣","非常有兴趣"]},
+    {id:108, section:"行业兴趣", type:"likert", title:"我对出版、策展、文化传播等工作充满向往。", dimension:"ind_culture", labels:["完全没兴趣","非常有兴趣"]},
+    {id:109, section:"行业兴趣", type:"likert", title:"我对文创产品设计、IP运营等新兴文化产业感兴趣。", dimension:"ind_culture", labels:["完全没兴趣","非常有兴趣"]},
+    {id:110, section:"行业兴趣", type:"likert", title:"我对金融产品、投资分析或财务管理感兴趣。", dimension:"ind_finance", labels:["完全没兴趣","非常有兴趣"]},
+    {id:111, section:"行业兴趣", type:"likert", title:"我喜欢为客户提供专业的咨询建议，解决复杂的商业问题。", dimension:"ind_finance", labels:["完全没兴趣","非常有兴趣"]},
+    {id:112, section:"行业兴趣", type:"likert", title:"我关注社会不公，希望通过实际行动帮助弱势群体。", dimension:"ind_ngo", labels:["完全没兴趣","非常有兴趣"]},
+    {id:113, section:"行业兴趣", type:"likert", title:"我对公益项目策划、社区发展等方向有浓厚兴趣。", dimension:"ind_ngo", labels:["完全没兴趣","非常有兴趣"]},
+    {id:114, section:"行业兴趣", type:"likert", title:"我对互联网产品的用户体验和运营策略很感兴趣。", dimension:"ind_tech", labels:["完全没兴趣","非常有兴趣"]},
+    {id:115, section:"行业兴趣", type:"likert", title:"我想在科技公司从事产品经理、运营或市场等非技术岗位。", dimension:"ind_tech", labels:["完全没兴趣","非常有兴趣"]},
+    {id:116, section:"行业兴趣", type:"likert", title:"我对跨文化交流、国际事务和涉外工作充满好奇。", dimension:"ind_international", labels:["完全没兴趣","非常有兴趣"]},
+    {id:117, section:"行业兴趣", type:"likert", title:"我喜欢研究学术问题，对进入高校或科研机构有兴趣。", dimension:"ind_academic", labels:["完全没兴趣","非常有兴趣"]},
+    {id:118, section:"行业兴趣", type:"likert", title:"我对心理咨询、职业规划指导等助人职业很向往。", dimension:"ind_counseling", labels:["完全没兴趣","非常有兴趣"]},
+    {id:119, section:"行业兴趣", type:"likert", title:"我对数据驱动的商业分析和战略咨询工作感兴趣。", dimension:"ind_finance", labels:["完全没兴趣","非常有兴趣"]},
+    {id:120, section:"行业兴趣", type:"likert", title:"我喜欢组织大型活动、会议或展览。", dimension:"ind_culture", labels:["完全没兴趣","非常有兴趣"]},
+    // ===== 第六部分：情境判断题（20题）=====
+    {id:121, section:"情境判断", type:"select", title:"你刚入职一家公司，发现团队里有一位同事经常在背后议论他人。你会怎么做？", options:["保持距离，专注自己的工作","主动与该同事沟通，表达你的看法","向领导反映这个情况","与其他同事讨论如何应对"], dimensions:{interpersonal:1,leadership:0,stress_tolerance:0,independent:1}},
+    {id:122, section:"情境判断", type:"select", title:"领导安排了一个紧急项目，截止日期很近，但你手头还有其他未完成的任务。你会？", options:["加班完成所有任务，不让任何事情落下","与领导沟通，协商优先级和时间安排","先完成紧急项目，其他任务向同事求助","按原计划继续，紧急项目尽力而为"], dimensions:{organization:1,stress_tolerance:1,interpersonal:0,proactive:1}},
+    {id:123, section:"情境判断", type:"select", title:"在一次重要的团队汇报中，你发现PPT中有一个明显的数据错误。你会？", options:["当场指出错误并提供正确数据","私下告诉汇报的同事，让他自己纠正","等会议结束后再提出","假装没看到，毕竟不是你的汇报"], dimensions:{detail:1,interpersonal:1,oral_expression:0,leadership:0}},
+    {id:124, section:"情境判断", type:"select", title:"公司要推行一项你认为不太合理的新制度。你会？", options:["收集数据和案例，写一份建议报告提交给管理层","和同事们讨论，组织大家一起向上反馈","选择适应新制度，服从公司决定","私下向直属领导表达不同意见"], dimensions:{leadership:1,written_expression:0,rational_decision:1,proactive:1}},
+    {id:125, section:"情境判断", type:"select", title:"你负责的一篇重要稿件被客户退回要求大幅修改，但你认为原稿质量很高。你会？", options:["了解客户的具体需求，在保留核心内容的基础上调整","坚持自己的专业判断，与客户充分沟通说服对方","完全按照客户意见修改，客户满意最重要","请领导介入协调，寻找折中方案"], dimensions:{interpersonal:1,stress_tolerance:0,creativity:0,flexible:1}},
+    {id:126, section:"情境判断", type:"select", title:"团队中两位核心成员发生了严重分歧，影响了项目进度。作为项目参与者，你会？", options:["主动充当调解人，分别了解双方诉求后组织协商","向项目负责人反映情况，建议介入","保持中立，只做好自己分内的事","私下安抚情绪较大的一方，避免冲突升级"], dimensions:{interpersonal:1,leadership:1,organization:0,affiliation_motive:1}},
+    {id:127, section:"情境判断", type:"select", title:"你发现一个很有前景的新媒体方向，但公司目前没有这方面的业务。你会？", options:["撰写详细的可行性报告，向上级提案","先利用业余时间小规模尝试，积累案例后再提出","和志同道合的同事组成兴趣小组一起探索","暂时放下这个想法，专注当前本职工作"], dimensions:{proactive:1,creativity:1,risk_seeking:0,achievement_motive:1}},
+    {id:128, section:"情境判断", type:"select", title:"你的直属领导离职了，新领导的管理风格与前任完全不同。你会？", options:["主动了解新领导的偏好和期望，尽快适应","保持自己的工作节奏，用实力证明自己","观察一段时间再决定是否需要调整","找机会与新领导深入沟通，建立信任"], dimensions:{learning:1,flexible:1,interpersonal:0,stress_tolerance:1}},
+    {id:129, section:"情境判断", type:"select", title:"一位实习生在工作中反复犯同样的错误，但态度很认真。你会？", options:["耐心地教他正确方法，帮他建立工作清单","直接帮他做完，这样更有效率","建议领导给他安排更适合的工作","观察他的学习方式，调整教导策略"], dimensions:{interpersonal:1,leadership:1,detail:0,learning:0}},
+    {id:130, section:"情境判断", type:"select", title:"公司给你两个岗位选择：A是你擅长但发展空间有限的岗位，B是全新领域但成长性强。你选？", options:["选B，挑战自我，抓住成长机会","选A，发挥优势做到极致","先了解B的具体情况和支持资源再决定","询问是否可以轮岗，两者兼顾"], dimensions:{risk_seeking:1,achievement_motive:0,rational_decision:1,learning:1}},
+    {id:131, section:"情境判断", type:"select", title:"你在准备一个重要方案时，同事提供了一条关键信息但你无法验证其准确性。你会？", options:["花时间从其他渠道核实这条信息","先使用这条信息，同时注明信息来源","不使用未经验证的信息，用其他已确认的数据替代","请同事提供信息的原始出处"], dimensions:{detail:1,rational_decision:1,stress_tolerance:0,logic:1}},
+    {id:132, section:"情境判断", type:"select", title:"年终评估时你发现自己的绩效评分低于预期，你认为评估不够公平。你会？", options:["预约领导一对一沟通，用具体数据说明自己的贡献","反思自己是否有未达到的隐性期望","接受结果，下一年用更出色的表现证明自己","向HR了解评估标准和申诉流程"], dimensions:{proactive:1,stress_tolerance:1,rational_decision:0,interpersonal:0}},
+    {id:133, section:"情境判断", type:"select", title:"你被要求负责一个跨部门项目，但其他部门的同事配合度很低。你会？", options:["先了解各方的顾虑和利益点，寻找共赢方案","请上级协调资源和权限支持","设立明确的节点和责任分工，定期跟进","一对一与关键人物建立私人关系，争取支持"], dimensions:{organization:1,leadership:1,interpersonal:1,proactive:0}},
+    {id:134, section:"情境判断", type:"select", title:"周末你收到领导的工作消息，要求你处理一件不太紧急的事务。你会？", options:["简单回复收到，周一上班后处理","评估紧急程度后决定是否立刻处理","立即处理完毕，展示积极态度","不回复消息，等工作日再处理"], dimensions:{val_balance:1,stress_tolerance:0,proactive:0,structured:0}},
+    {id:135, section:"情境判断", type:"select", title:"你参加一个行业会议，发现演讲者的观点与你的研究结论相悖。你会？", options:["在提问环节礼貌地提出不同观点并提供你的论据","会后私下找演讲者交流讨论","做好笔记回去后重新审视自己的研究","在社交媒体上发表自己的不同看法并引发讨论"], dimensions:{oral_expression:1,logic:1,achievement_motive:0,interpersonal:0}},
+    {id:136, section:"情境判断", type:"select", title:"你的方案在会议上被多人质疑，虽然你很有信心。你会？", options:["冷静地用数据和逻辑逐条回应质疑","表示会议后整合大家的意见再优化方案","请求给更多时间准备更充分的论据","坚持己见并尝试从另一个角度重新阐述"], dimensions:{stress_tolerance:1,oral_expression:1,rational_decision:0,leadership:0}},
+    {id:137, section:"情境判断", type:"select", title:"你发现公司的一项操作可能存在合规风险，但直接利益相关人是你的上级。你会？", options:["向公司合规部门匿名举报","收集证据后向更高级别的领导反映","私下与上级沟通表达你的顾虑","暂时观察，如果问题持续恶化再采取行动"], dimensions:{val_contribution:1,risk_seeking:0,rational_decision:1,interpersonal:0}},
+    {id:138, section:"情境判断", type:"select", title:"团队需要有人在假期值班完成一个紧急交付物，没人主动报名。你会？", options:["主动报名，承担责任","提议轮值方案，大家公平分担","建议与客户协商延期","评估自己假期安排后再决定是否报名"], dimensions:{affiliation_motive:1,leadership:0,organization:1,val_balance:0}},
+    {id:139, section:"情境判断", type:"select", title:"你在社交场合被介绍给一位对你职业发展很有帮助的业界前辈。你会？", options:["主动交流，简洁地介绍自己并表达请教意愿","先倾听对方分享经验，适时提出有质量的问题","交换联系方式，之后再找机会深入交流","感到紧张但尽量表现自然，跟随对话节奏"], dimensions:{extraversion:1,interpersonal:1,proactive:0,oral_expression:0}},
+    {id:140, section:"情境判断", type:"select", title:"你的项目计划被驳回，要求从零开始重新设计方案。你会？", options:["分析被否决的原因，针对性地重新设计","请求与决策者沟通，了解具体期望再动手","快速产出多个备选方案供选择","感到沮丧但很快调整心态，投入新方案"], dimensions:{stress_tolerance:1,creativity:1,rational_decision:0,learning:1}},
+    // ===== 第七部分：就业现实认知（10题）=====
+    {id:141, section:"就业现实认知", type:"likert", title:"我能接受入行初期薪资较低（月薪5000以下），愿意先积累经验。", dimension:"reality_salary", labels:["完全不能接受","完全可以接受"]},
+    {id:142, section:"就业现实认知", type:"likert", title:"我理解大多数文科相关职业需要3-5年才能进入收入快速增长期。", dimension:"reality_patience", labels:["难以接受","能够理解并接受"]},
+    {id:143, section:"就业现实认知", type:"likert", title:"如果发现当前方向不适合，我愿意在工作2-3年后转换赛道。", dimension:"reality_switch", labels:["完全不愿意","非常愿意"]},
+    {id:144, section:"就业现实认知", type:"likert", title:"我愿意通过考研、考博等方式来提升自己的职业竞争力。", dimension:"reality_study", labels:["完全不考虑","非常愿意"]},
+    {id:145, section:"就业现实认知", type:"likert", title:"我理解文科就业可能需要更主动地创造机会而非等待。", dimension:"reality_proactive", labels:["不太认同","非常认同"]},
+    {id:146, section:"就业现实认知", type:"likert", title:"我能接受先从非理想岗位做起，逐步向目标方向靠近。", dimension:"reality_patience", labels:["不能接受","完全接受"]},
+    {id:147, section:"就业现实认知", type:"likert", title:"我愿意利用业余时间学习新技能来拓宽职业选择面。", dimension:"reality_study", labels:["不太愿意","非常愿意"]},
+    {id:148, section:"就业现实认知", type:"likert", title:"我对考取相关职业资格证书（如教师证、法考、CPA等）持积极态度。", dimension:"reality_study", labels:["不感兴趣","非常积极"]},
+    {id:149, section:"就业现实认知", type:"likert", title:"我能接受所在行业可能面临的数字化转型和岗位变革。", dimension:"reality_switch", labels:["很担忧","积极应对"]},
+    {id:150, section:"就业现实认知", type:"likert", title:"我认为综合素质和持续学习能力比具体专业对口更重要。", dimension:"reality_proactive", labels:["不太认同","非常认同"]}
+    ];
+    // END OF QUESTIONS ARRAY
+
+    // ====== 职业模型数据（33种职业方向）======
+    // profile: 各维度要求; negative: 负向匹配; threshold: 关键阈值; overtimeLevel/stabilityType: 硬性筛选
+    const careerModels = [
+    {name:"中小学教师", desc:"从事基础教育教学，培养学生知识与品德", category:"教育",
+     profile:{oral_expression:0.85,written_expression:0.6,logic:0.5,interpersonal:0.85,creativity:0.4,data_analysis:0.2,organization:0.7,stress_tolerance:0.65,learning:0.7,leadership:0.6,detail:0.6,extraversion:0.6,teamwork:0.5,structured:0.75,val_stability:0.85,val_contribution:0.85,val_balance:0.7,ind_education:0.95},
+     negative:{risk_seeking:-0.4,val_salary:-0.3,competitive:-0.2},
+     threshold:{ind_education:0.5,oral_expression:0.4,val_stability:0.4},
+     salary:{tier1:"8000-15000",tier2:"6000-12000",tier3:"4500-8000"}, growth:"稳定增长，职称晋升路径明确", path:"教师资格证→应届招聘/特岗→教学经验积累→学科带头人/教研组长",
+     overtimeLevel:0.3, stabilityType:"system", cityFit:["all"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"普通一本及以上即可，部分重点中学偏好211+"}},
+    {name:"高校辅导员/行政", desc:"负责高校学生事务管理、思想教育或行政管理工作", category:"教育",
+     profile:{oral_expression:0.65,written_expression:0.7,logic:0.4,interpersonal:0.8,creativity:0.2,data_analysis:0.3,organization:0.85,stress_tolerance:0.5,learning:0.5,leadership:0.7,detail:0.75,extraversion:0.7,teamwork:0.7,structured:0.85,val_stability:0.95,val_contribution:0.5,val_balance:0.8,ind_education:0.7},
+     negative:{risk_seeking:-0.5,val_creativity:-0.3,variety_seeking:-0.3},
+     threshold:{val_stability:0.5,organization:0.4,ind_education:0.3},
+     salary:{tier1:"8000-14000",tier2:"6000-11000",tier3:"5000-8000"}, growth:"稳定，晋升空间相对有限但工作生活平衡好", path:"硕士学历→高校招聘→辅导员/行政岗→科级干部",
+     overtimeLevel:0.2, stabilityType:"system", cityFit:["all"],
+     schoolReq:{minLevel:2, strictLevel:false, desc:"硕士学历要求，211及以上优先"}},
+    {name:"新媒体运营/内容编辑", desc:"负责新媒体平台内容策划、创作与运营推广", category:"媒体",
+     profile:{oral_expression:0.4,written_expression:0.95,logic:0.4,interpersonal:0.5,creativity:0.95,data_analysis:0.6,organization:0.5,stress_tolerance:0.6,learning:0.85,leadership:0.2,detail:0.5,extraversion:0.4,flexible:0.85,variety_seeking:0.8,val_creativity:0.9,val_autonomy:0.7,ind_media:0.95},
+     negative:{structured:-0.3,process_oriented:-0.4,val_stability:-0.3},
+     threshold:{creativity:0.5,written_expression:0.5,ind_media:0.4},
+     salary:{tier1:"8000-20000",tier2:"6000-15000",tier3:"5000-10000"}, growth:"快速变化，优秀者收入上限高，需持续跟进趋势", path:"实习/自媒体经验→初级编辑→主编/运营主管→内容总监",
+     overtimeLevel:0.6, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:5, strictLevel:false, desc:"无严格学历门槛，看作品和能力"}},
+    {name:"记者/编辑（传统媒体）", desc:"从事新闻采编、深度报道或出版编辑工作", category:"媒体",
+     profile:{oral_expression:0.7,written_expression:0.95,logic:0.75,interpersonal:0.7,creativity:0.7,data_analysis:0.5,organization:0.5,stress_tolerance:0.85,learning:0.8,leadership:0.3,detail:0.85,extraversion:0.6,flexible:0.7,proactive:0.85,val_contribution:0.75,val_creativity:0.7,ind_media:0.85},
+     negative:{structured:-0.2,val_balance:-0.3,risk_averse:-0.3},
+     threshold:{written_expression:0.6,stress_tolerance:0.4,ind_media:0.4},
+     salary:{tier1:"10000-25000",tier2:"7000-18000",tier3:"5000-12000"}, growth:"传统媒体转型中，深度内容和调查报道仍有价值", path:"新闻学历+实习→见习记者→资深记者→首席记者/副总编",
+     overtimeLevel:0.7, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"头部媒体偏好985/211，地方媒体一本即可"}},
+    {name:"律师（律所诉讼/非诉）", desc:"从事诉讼代理、非诉业务或企业法律顾问，专业化分工明确", category:"法律",
+     profile:{oral_expression:0.85,written_expression:0.8,logic:0.95,interpersonal:0.65,creativity:0.3,data_analysis:0.5,organization:0.7,stress_tolerance:0.9,learning:0.85,leadership:0.5,detail:0.95,rational_decision:0.9,structured:0.7,val_salary:0.75,val_status:0.7,val_growth:0.85,ind_law:0.95},
+     negative:{val_balance:-0.4,affiliation_motive:-0.2,flexible:-0.2},
+     threshold:{logic:0.6,ind_law:0.6,detail:0.5,stress_tolerance:0.5},
+     salary:{tier1:"15000-50000+",tier2:"10000-30000",tier3:"6000-15000"}, growth:"前景广阔，专业化方向多，收入天花板高", path:"法考通过→律师实习→执业律师→合伙人/法务总监",
+     overtimeLevel:0.85, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"法考通过是硬门槛，学校层次影响进入顶尖律所"}},
+    {name:"公务员（省市级机关）", desc:"在省市级政府机关从事行政管理、政策执行等公共事务", category:"政府",
+     profile:{oral_expression:0.55,written_expression:0.8,logic:0.55,interpersonal:0.7,creativity:0.15,data_analysis:0.3,organization:0.7,stress_tolerance:0.5,learning:0.4,leadership:0.6,detail:0.85,structured:0.95,process_oriented:0.9,val_stability:0.95,val_balance:0.75,val_status:0.65,ind_gov:0.95},
+     negative:{risk_seeking:-0.6,val_creativity:-0.4,variety_seeking:-0.4,val_autonomy:-0.4},
+     threshold:{val_stability:0.6,ind_gov:0.5,structured:0.4},
+     salary:{tier1:"10000-18000",tier2:"7000-14000",tier3:"5000-10000"}, growth:"稳定性极高，晋升依赖年资和机遇，福利保障完善", path:"国考/省考→科员→副科→正科→处级（需较长年限）",
+     overtimeLevel:0.2, stabilityType:"system", cityFit:["all"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"普通公务员一本即可，选调生/定向选调需985/211"}},
+    {name:"人力资源管理", desc:"负责企业招聘、培训、绩效、薪酬等人力资源工作", category:"企业管理",
+     profile:{oral_expression:0.7,written_expression:0.55,logic:0.55,interpersonal:0.95,creativity:0.3,data_analysis:0.6,organization:0.85,stress_tolerance:0.65,learning:0.6,leadership:0.7,detail:0.7,extraversion:0.75,teamwork:0.75,affiliation_motive:0.7,val_balance:0.55,val_growth:0.6,ind_hr:0.95},
+     negative:{introversion:-0.3,depth_focus:-0.2},
+     threshold:{interpersonal:0.5,organization:0.4,ind_hr:0.4},
+     salary:{tier1:"10000-30000",tier2:"8000-20000",tier3:"5000-12000"}, growth:"需求稳定，HRBP方向前景好，需懂业务", path:"HR实习→招聘/培训专员→HR经理→HRD/CHRO",
+     overtimeLevel:0.5, stabilityType:"market", cityFit:["tier1","tier2","tier3"],
+     schoolReq:{minLevel:4, strictLevel:false, desc:"二本及以上即可，大厂HR偏好211+"}},
+    {name:"市场营销/品牌策划", desc:"负责市场调研、品牌推广、营销方案策划与执行", category:"营销",
+     profile:{oral_expression:0.8,written_expression:0.7,logic:0.55,interpersonal:0.7,creativity:0.9,data_analysis:0.75,organization:0.7,stress_tolerance:0.7,learning:0.75,leadership:0.5,detail:0.4,extraversion:0.75,flexible:0.8,risk_seeking:0.5,competitive:0.7,val_creativity:0.7,val_salary:0.65,ind_marketing:0.95},
+     negative:{introversion:-0.3,process_oriented:-0.3,val_stability:-0.2},
+     threshold:{creativity:0.5,ind_marketing:0.5,extraversion:0.3},
+     salary:{tier1:"12000-35000",tier2:"8000-22000",tier3:"6000-15000"}, growth:"需求旺盛，数字化营销人才薪资增长快", path:"市场实习→市场专员→品牌经理→市场总监/CMO",
+     overtimeLevel:0.65, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:4, strictLevel:false, desc:"看能力和经验为主，大品牌管培偏好211+"}},
+    {name:"出版编辑/文化策划", desc:"从事图书策划编辑、文化IP开发或文化活动策划", category:"文化",
+     profile:{oral_expression:0.4,written_expression:0.95,logic:0.6,interpersonal:0.4,creativity:0.85,data_analysis:0.2,organization:0.55,stress_tolerance:0.45,learning:0.7,leadership:0.2,detail:0.95,introversion:0.65,depth_focus:0.85,val_creativity:0.95,val_autonomy:0.75,val_contribution:0.5,ind_culture:0.95},
+     negative:{extraversion:-0.2,competitive:-0.3,val_salary:-0.3},
+     threshold:{written_expression:0.6,detail:0.5,ind_culture:0.5},
+     salary:{tier1:"8000-20000",tier2:"6000-15000",tier3:"5000-10000"}, growth:"传统出版平稳，文化IP和数字出版有新机会", path:"编辑实习→助理编辑→责任编辑→主编/文化项目负责人",
+     overtimeLevel:0.4, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"头部出版社偏好985/211，中小出版社一本即可"}},
+    {name:"管理咨询顾问", desc:"为企业提供战略、运营、组织等方面的管理咨询服务", category:"咨询",
+     profile:{oral_expression:0.85,written_expression:0.8,logic:0.95,interpersonal:0.7,creativity:0.7,data_analysis:0.9,organization:0.75,stress_tolerance:0.95,learning:0.95,leadership:0.65,detail:0.7,rational_decision:0.95,achievement_motive:0.95,competitive:0.8,val_salary:0.85,val_growth:0.95,ind_finance:0.8},
+     negative:{val_balance:-0.5,val_stability:-0.4,introversion:-0.3,risk_averse:-0.3},
+     threshold:{logic:0.6,stress_tolerance:0.6,data_analysis:0.5,learning:0.6},
+     salary:{tier1:"20000-60000+",tier2:"15000-40000",tier3:"10000-25000"}, growth:"顶尖咨询公司起薪高、成长快，出路广", path:"名校硕士→分析师→咨询顾问→项目经理→合伙人",
+     overtimeLevel:0.95, stabilityType:"market", cityFit:["tier1"],
+     schoolReq:{minLevel:1, strictLevel:true, desc:"MBB等头部咨询严格要求985/海外名校，二线咨询要求211+"}},
+    {name:"社会工作者/NGO从业者", desc:"从事社区服务、公益项目管理或社会政策倡导", category:"公益",
+     profile:{oral_expression:0.65,written_expression:0.55,logic:0.4,interpersonal:0.95,creativity:0.4,data_analysis:0.3,organization:0.7,stress_tolerance:0.7,learning:0.55,leadership:0.45,detail:0.4,affiliation_motive:0.85,teamwork:0.85,val_contribution:0.95,val_balance:0.5,val_autonomy:0.4,ind_ngo:0.95},
+     negative:{val_salary:-0.4,competitive:-0.4,power_motive:-0.3},
+     threshold:{val_contribution:0.6,interpersonal:0.5,ind_ngo:0.5},
+     salary:{tier1:"6000-15000",tier2:"5000-10000",tier3:"4000-8000"}, growth:"薪资水平偏低但社会意义大，政策支持在增强", path:"社工证→基层社工→项目主管→机构负责人",
+     overtimeLevel:0.35, stabilityType:"market", cityFit:["all"],
+     schoolReq:{minLevel:5, strictLevel:false, desc:"无学历门槛，看热情和专业能力"}},
+    {name:"互联网产品经理", desc:"负责互联网产品规划、设计和项目推进", category:"科技",
+     profile:{oral_expression:0.7,written_expression:0.7,logic:0.85,interpersonal:0.7,creativity:0.8,data_analysis:0.85,organization:0.85,stress_tolerance:0.75,learning:0.95,leadership:0.6,detail:0.55,flexible:0.75,rational_decision:0.75,val_salary:0.7,val_growth:0.85,val_creativity:0.6,ind_tech:0.95},
+     negative:{process_oriented:-0.3,depth_focus:-0.2,val_stability:-0.2},
+     threshold:{learning:0.6,data_analysis:0.4,ind_tech:0.5,logic:0.5},
+     salary:{tier1:"15000-40000+",tier2:"10000-28000",tier3:"8000-18000"}, growth:"需求大、薪资高，但竞争激烈、需持续学习", path:"实习→产品助理→产品经理→高级产品经理→产品总监",
+     overtimeLevel:0.75, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:2, strictLevel:true, desc:"大厂产品岗普遍要求211+，头部公司偏好985/海外名校"}},
+    {name:"翻译/国际事务", desc:"从事笔译口译、国际组织或涉外事务工作", category:"国际",
+     profile:{oral_expression:0.8,written_expression:0.9,logic:0.55,interpersonal:0.55,creativity:0.4,data_analysis:0.2,organization:0.45,stress_tolerance:0.6,learning:0.8,leadership:0.2,detail:0.95,introversion:0.5,depth_focus:0.8,val_autonomy:0.7,val_creativity:0.4,ind_international:0.95},
+     negative:{competitive:-0.2,power_motive:-0.3},
+     threshold:{detail:0.6,ind_international:0.6,written_expression:0.5},
+     salary:{tier1:"10000-30000",tier2:"7000-20000",tier3:"5000-12000"}, growth:"AI翻译冲击大，高端翻译和本地化仍有价值", path:"外语专业+证书→初级译员→资深翻译/项目经理→翻译总监",
+     overtimeLevel:0.4, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:2, strictLevel:false, desc:"国际组织偏好985/海外名校，翻译行业看证书和能力"}},
+    {name:"心理咨询师/职业规划师", desc:"提供心理咨询、职业规划或生涯教练服务", category:"咨询服务",
+     profile:{oral_expression:0.8,written_expression:0.5,logic:0.55,interpersonal:0.95,creativity:0.4,data_analysis:0.2,organization:0.4,stress_tolerance:0.75,learning:0.7,leadership:0.3,detail:0.45,extraversion:0.5,affiliation_motive:0.85,val_contribution:0.85,val_autonomy:0.8,val_growth:0.7,ind_counseling:0.95},
+     negative:{competitive:-0.3,val_salary:-0.2,power_motive:-0.3},
+     threshold:{interpersonal:0.6,ind_counseling:0.6,val_contribution:0.4},
+     salary:{tier1:"10000-30000",tier2:"7000-20000",tier3:"5000-12000"}, growth:"需求增长中，执业初期收入低但资深后收入可观", path:"心理学学历+资格证→实习→执业咨询师→督导/开办机构",
+     overtimeLevel:0.3, stabilityType:"market", cityFit:["tier1","tier2","tier3"],
+     schoolReq:{minLevel:4, strictLevel:false, desc:"看专业资质和受训经历，学校层次非核心门槛"}},
+    {name:"企业培训师/教学设计师", desc:"为企业设计开发培训课程和人才发展方案", category:"教育",
+     profile:{oral_expression:0.95,written_expression:0.7,logic:0.6,interpersonal:0.8,creativity:0.7,data_analysis:0.45,organization:0.7,stress_tolerance:0.55,learning:0.8,leadership:0.7,detail:0.45,extraversion:0.75,flexible:0.6,val_salary:0.6,val_growth:0.7,val_creativity:0.6,ind_education:0.7,ind_hr:0.6},
+     negative:{introversion:-0.3,risk_averse:-0.2},
+     threshold:{oral_expression:0.6,interpersonal:0.4},
+     salary:{tier1:"12000-30000",tier2:"8000-20000",tier3:"6000-12000"}, growth:"企业学习市场持续增长，数字化学习是趋势", path:"培训专员→课程开发→培训经理→首席学习官/独立讲师",
+     overtimeLevel:0.5, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:4, strictLevel:false, desc:"看经验和表达能力，知名企业培训岗偏好211+"}},
+    {name:"行政管理/综合管理", desc:"从事企业行政事务管理、办公室管理等综合协调工作", category:"企业管理",
+     profile:{oral_expression:0.5,written_expression:0.65,logic:0.4,interpersonal:0.7,creativity:0.15,data_analysis:0.35,organization:0.95,stress_tolerance:0.55,learning:0.4,leadership:0.45,detail:0.85,structured:0.85,process_oriented:0.8,val_stability:0.75,val_balance:0.75,ind_hr:0.4,ind_gov:0.35},
+     negative:{risk_seeking:-0.3,creativity:-0.2,achievement_motive:-0.2},
+     threshold:{organization:0.5,detail:0.4},
+     salary:{tier1:"7000-15000",tier2:"5000-11000",tier3:"4000-8000"}, growth:"入行门槛较低但天花板有限，向管理方向发展需转型", path:"行政助理→行政主管→行政经理→办公室主任/COO助理",
+     overtimeLevel:0.35, stabilityType:"market", cityFit:["all"],
+     schoolReq:{minLevel:5, strictLevel:false, desc:"无严格学历门槛，看综合能力和经验"}},
+    // ===== 新增职业方向 =====
+    {name:"银行客户经理", desc:"银行零售或对公客户经理，开发维护客户关系，完成存贷款KPI", category:"金融",
+     profile:{oral_expression:0.8,written_expression:0.4,logic:0.5,interpersonal:0.95,creativity:0.1,data_analysis:0.5,organization:0.6,stress_tolerance:0.85,learning:0.5,leadership:0.3,detail:0.6,extraversion:0.9,competitive:0.85,proactive:0.9,val_salary:0.8,val_status:0.5,ind_finance:0.8},
+     negative:{introversion:-0.5,val_balance:-0.3,val_autonomy:-0.3},
+     threshold:{interpersonal:0.6,stress_tolerance:0.5,extraversion:0.5},
+     salary:{tier1:"10000-25000",tier2:"8000-18000",tier3:"6000-12000"}, growth:"业绩导向明显，优秀者收入高但压力大，可转型理财或管理", path:"校招进入银行→柜员轮岗→客户经理→高级客户经理→支行行长",
+     overtimeLevel:0.6, stabilityType:"market", cityFit:["all"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"国有大行偏好211+，股份制银行一本即可"}},
+    {name:"会计/审计（四大及企业）", desc:"四大会计师事务所审计或企业财务岗，处理账务、审计报告、税务筹划", category:"金融",
+     profile:{oral_expression:0.3,written_expression:0.5,logic:0.8,interpersonal:0.4,creativity:0.1,data_analysis:0.9,organization:0.7,stress_tolerance:0.8,learning:0.7,leadership:0.3,detail:0.95,structured:0.9,rational_decision:0.85,process_oriented:0.8,val_salary:0.7,val_stability:0.6,ind_finance:0.75},
+     negative:{creativity:-0.3,val_autonomy:-0.3,variety_seeking:-0.3},
+     threshold:{detail:0.6,data_analysis:0.5,stress_tolerance:0.5},
+     salary:{tier1:"12000-35000",tier2:"8000-22000",tier3:"6000-15000"}, growth:"四大起薪中等但涨幅快，CPA持证者薪资跳跃式增长", path:"CPA备考→四大/企业财务→高级审计师→审计经理→合伙人/CFO",
+     overtimeLevel:0.85, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"四大偏好211+，企业财务岗一本即可，CPA是核心门槛"}},
+    {name:"证券/基金研究员", desc:"撰写行业研究报告，分析上市公司基本面，为投资决策提供支持", category:"金融",
+     profile:{oral_expression:0.6,written_expression:0.9,logic:0.95,interpersonal:0.5,creativity:0.4,data_analysis:0.95,organization:0.5,stress_tolerance:0.85,learning:0.9,leadership:0.2,detail:0.85,depth_focus:0.9,rational_decision:0.95,achievement_motive:0.85,val_salary:0.9,val_growth:0.8,ind_finance:0.95},
+     negative:{val_balance:-0.5,val_stability:-0.3,affiliation_motive:-0.2},
+     threshold:{logic:0.6,data_analysis:0.6,written_expression:0.5,ind_finance:0.6},
+     salary:{tier1:"20000-60000+",tier2:"15000-35000",tier3:"10000-20000"}, growth:"金融行业高薪赛道，研究员→基金经理路径清晰但竞争极激烈", path:"名校硕士+CFA→实习→初级研究员→资深研究员→基金经理/研究总监",
+     overtimeLevel:0.9, stabilityType:"market", cityFit:["tier1"],
+     schoolReq:{minLevel:1, strictLevel:true, desc:"头部券商/基金严格要求985/海外名校硕士"}},
+    {name:"博物馆/文化遗产管理", desc:"在文博系统从事策展、文物保护研究、文化传播与公共教育", category:"文化",
+     profile:{oral_expression:0.5,written_expression:0.8,logic:0.5,interpersonal:0.4,creativity:0.6,data_analysis:0.2,organization:0.6,stress_tolerance:0.3,learning:0.7,leadership:0.2,detail:0.9,introversion:0.6,depth_focus:0.9,structured:0.7,val_stability:0.8,val_contribution:0.7,val_creativity:0.6,ind_culture:0.95},
+     negative:{competitive:-0.3,val_salary:-0.3,risk_seeking:-0.4},
+     threshold:{ind_culture:0.6,detail:0.5,depth_focus:0.4},
+     salary:{tier1:"7000-15000",tier2:"5000-11000",tier3:"4000-8000"}, growth:"事业编制为主，薪资一般但工作稳定，学术路径可转高校", path:"考古/文博硕士→博物馆招聘→策展助理→策展人→馆长/研究员",
+     overtimeLevel:0.15, stabilityType:"system", cityFit:["all"],
+     schoolReq:{minLevel:2, strictLevel:false, desc:"省级以上博物馆偏好985/211相关专业硕士"}},
+    {name:"影视策划/编剧", desc:"影视公司从事内容开发、剧本创作、IP改编和项目策划", category:"文创",
+     profile:{oral_expression:0.5,written_expression:0.95,logic:0.5,interpersonal:0.5,creativity:0.95,data_analysis:0.1,organization:0.4,stress_tolerance:0.7,learning:0.6,leadership:0.2,detail:0.5,independent:0.8,flexible:0.8,depth_focus:0.7,val_creativity:0.95,val_autonomy:0.8,ind_media:0.7,ind_culture:0.8},
+     negative:{structured:-0.4,process_oriented:-0.4,val_stability:-0.4},
+     threshold:{creativity:0.7,written_expression:0.6},
+     salary:{tier1:"10000-40000+",tier2:"7000-20000",tier3:"5000-12000"}, growth:"项目制收入波动大，头部编剧收入极高但成名难度大", path:"编剧工作坊/影视院校→枪手/跟组编剧→署名编剧→主笔/制片人",
+     overtimeLevel:0.6, stabilityType:"free", cityFit:["tier1"],
+     schoolReq:{minLevel:5, strictLevel:false, desc:"看作品和能力，中传/北电等院校有圈层优势"}},
+    {name:"游戏文案/剧情策划", desc:"游戏公司负责世界观构建、角色塑造、剧情脚本和文案撰写", category:"文创",
+     profile:{oral_expression:0.3,written_expression:0.9,logic:0.6,interpersonal:0.4,creativity:0.95,data_analysis:0.3,organization:0.5,stress_tolerance:0.6,learning:0.8,leadership:0.2,detail:0.7,independent:0.7,flexible:0.7,variety_seeking:0.7,val_creativity:0.95,val_salary:0.6,ind_culture:0.6,ind_tech:0.7},
+     negative:{structured:-0.3,process_oriented:-0.3,val_stability:-0.2},
+     threshold:{creativity:0.6,written_expression:0.5},
+     salary:{tier1:"12000-30000",tier2:"9000-22000",tier3:"7000-15000"}, growth:"游戏行业薪资可观，叙事设计需求增长，但版号政策有不确定性", path:"投递作品→初级文案→剧情策划→主策划→叙事总监/独立制作人",
+     overtimeLevel:0.7, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:4, strictLevel:false, desc:"看作品集和创作能力，学历非核心门槛"}},
+    {name:"自媒体创业/个人IP", desc:"独立运营个人品牌，通过内容创作、知识付费、广告等方式变现", category:"自由职业",
+     profile:{oral_expression:0.7,written_expression:0.85,logic:0.4,interpersonal:0.6,creativity:0.95,data_analysis:0.6,organization:0.5,stress_tolerance:0.8,learning:0.9,leadership:0.3,detail:0.3,flexible:0.95,risk_seeking:0.85,proactive:0.95,independent:0.9,val_autonomy:0.95,val_creativity:0.9,val_salary:0.7,ind_media:0.9},
+     negative:{risk_averse:-0.7,structured:-0.5,val_stability:-0.6,process_oriented:-0.4},
+     threshold:{creativity:0.6,risk_seeking:0.4,proactive:0.5},
+     salary:{tier1:"0-100000+",tier2:"0-50000+",tier3:"0-30000+"}, growth:"收入极度不稳定，头部IP年入百万+但90%创业者难以维持", path:"积累内容能力→选定赛道→持续输出→粉丝积累→商业变现→团队化",
+     overtimeLevel:0.5, stabilityType:"free", cityFit:["all"],
+     schoolReq:{minLevel:5, strictLevel:false, desc:"无学历门槛，完全看内容能力和商业嗅觉"}},
+    {name:"电商运营", desc:"负责电商店铺日常运营、数据分析、活动策划和供应链协调", category:"互联网",
+     profile:{oral_expression:0.4,written_expression:0.6,logic:0.6,interpersonal:0.5,creativity:0.6,data_analysis:0.85,organization:0.8,stress_tolerance:0.75,learning:0.8,leadership:0.4,detail:0.7,flexible:0.7,competitive:0.7,proactive:0.7,val_salary:0.7,val_growth:0.6,ind_tech:0.6,ind_marketing:0.8},
+     negative:{introversion:-0.2,depth_focus:-0.2,val_balance:-0.2},
+     threshold:{data_analysis:0.4,organization:0.4},
+     salary:{tier1:"10000-30000",tier2:"7000-20000",tier3:"5000-12000"}, growth:"电商行业持续发展，直播电商和跨境电商是新增长点", path:"运营助理→店铺运营→运营主管→运营总监/自己开店",
+     overtimeLevel:0.7, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:5, strictLevel:false, desc:"看实操能力和数据思维，学历非核心门槛"}},
+    {name:"自由撰稿人/独立作者", desc:"以约稿写作、出版书籍、内容创作为生的自由职业者", category:"自由职业",
+     profile:{oral_expression:0.3,written_expression:0.95,logic:0.6,interpersonal:0.2,creativity:0.9,data_analysis:0.1,organization:0.3,stress_tolerance:0.6,learning:0.7,leadership:0.1,detail:0.8,introversion:0.8,independent:0.95,depth_focus:0.85,flexible:0.8,val_autonomy:0.95,val_creativity:0.95,val_balance:0.7,ind_media:0.6,ind_culture:0.7},
+     negative:{extraversion:-0.3,competitive:-0.3,val_stability:-0.5,structured:-0.4},
+     threshold:{written_expression:0.7,independent:0.5,val_autonomy:0.5},
+     salary:{tier1:"5000-40000+",tier2:"3000-25000+",tier3:"2000-15000+"}, growth:"收入不稳定但自由度极高，需要持续产出能力和自律", path:"积累作品→建立约稿渠道→出版/专栏→形成个人品牌→版税+约稿收入",
+     overtimeLevel:0.2, stabilityType:"free", cityFit:["all"],
+     schoolReq:{minLevel:5, strictLevel:false, desc:"完全看写作能力和作品，学历不是门槛"}},
+    {name:"事业单位（文职）", desc:"图书馆、档案馆、研究院等事业编制岗位，从事文献管理、研究辅助等", category:"政府",
+     profile:{oral_expression:0.3,written_expression:0.7,logic:0.4,interpersonal:0.4,creativity:0.1,data_analysis:0.3,organization:0.6,stress_tolerance:0.3,learning:0.4,leadership:0.2,detail:0.85,introversion:0.65,structured:0.9,process_oriented:0.85,val_stability:0.95,val_balance:0.9,val_contribution:0.4,ind_gov:0.6,ind_culture:0.5},
+     negative:{risk_seeking:-0.6,val_salary:-0.3,achievement_motive:-0.3,variety_seeking:-0.4},
+     threshold:{val_stability:0.6,detail:0.4},
+     salary:{tier1:"7000-13000",tier2:"5000-10000",tier3:"4000-7500"}, growth:"极其稳定但薪资增长缓慢，适合追求安逸生活的人", path:"事业单位考试→试用期→初级职称→中级职称→高级职称",
+     overtimeLevel:0.1, stabilityType:"system", cityFit:["all"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"一般要求本科以上，省级单位偏好211+"}},
+    {name:"选调生", desc:"通过定向选拔进入基层锻炼，后调任省市级机关的储备干部培养路径", category:"政府",
+     profile:{oral_expression:0.6,written_expression:0.8,logic:0.6,interpersonal:0.7,creativity:0.2,data_analysis:0.3,organization:0.75,stress_tolerance:0.7,learning:0.65,leadership:0.7,detail:0.7,structured:0.8,process_oriented:0.7,val_stability:0.85,val_status:0.75,val_contribution:0.6,ind_gov:0.9},
+     negative:{risk_seeking:-0.5,val_autonomy:-0.4,val_creativity:-0.3,flexible:-0.3},
+     threshold:{val_stability:0.5,ind_gov:0.5},
+     salary:{tier1:"9000-16000",tier2:"7000-13000",tier3:"5000-9000"}, growth:"晋升通道明确但需要基层经历，定向选调起点高于普通公考", path:"985/211应届→选调考试→基层2年→回调省市机关→科级→处级",
+     overtimeLevel:0.3, stabilityType:"system", cityFit:["all"],
+     schoolReq:{minLevel:1, strictLevel:true, desc:"定向选调严格要求985/双一流，普通选调要求211+，学生干部经历加分"}},
+    {name:"国企行政/党务/文宣", desc:"国有企业从事行政管理、党建宣传、企业文化或文字材料工作", category:"企业管理",
+     profile:{oral_expression:0.5,written_expression:0.85,logic:0.4,interpersonal:0.65,creativity:0.2,data_analysis:0.2,organization:0.75,stress_tolerance:0.45,learning:0.4,leadership:0.5,detail:0.8,structured:0.9,process_oriented:0.85,val_stability:0.9,val_balance:0.7,val_status:0.5,ind_gov:0.7},
+     negative:{risk_seeking:-0.4,val_creativity:-0.3,variety_seeking:-0.3,val_autonomy:-0.3},
+     threshold:{written_expression:0.5,val_stability:0.5},
+     salary:{tier1:"9000-18000",tier2:"7000-14000",tier3:"5000-10000"}, growth:"稳定性仅次于公务员，晋升依赖资历和关系，福利待遇较好", path:"校招/社招进入国企→办公室/党群部门→主管→部门负责人",
+     overtimeLevel:0.3, stabilityType:"system", cityFit:["all"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"央企总部偏好985/211，地方国企一本即可"}},
+    {name:"外贸业务员/跨境电商", desc:"外贸公司开发海外客户或跨境电商平台运营，需要外语和商务能力", category:"贸易",
+     profile:{oral_expression:0.7,written_expression:0.6,logic:0.5,interpersonal:0.8,creativity:0.4,data_analysis:0.5,organization:0.6,stress_tolerance:0.7,learning:0.7,leadership:0.3,detail:0.6,extraversion:0.75,proactive:0.8,competitive:0.7,flexible:0.6,val_salary:0.75,val_growth:0.5,ind_international:0.8,ind_marketing:0.5},
+     negative:{introversion:-0.3,val_stability:-0.2,risk_averse:-0.2},
+     threshold:{interpersonal:0.4,ind_international:0.4},
+     salary:{tier1:"8000-25000+",tier2:"6000-18000+",tier3:"5000-12000+"}, growth:"底薪+提成模式，业绩好者收入高，跨境电商是新增长点", path:"外贸助理→业务员→高级业务→外贸经理→自营外贸/跨境创业",
+     overtimeLevel:0.5, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:4, strictLevel:false, desc:"看外语能力和业务能力，学历非核心门槛"}},
+    {name:"国际组织/使馆工作", desc:"在联合国机构、国际NGO或驻外使领馆从事行政、翻译或项目工作", category:"国际",
+     profile:{oral_expression:0.8,written_expression:0.85,logic:0.6,interpersonal:0.7,creativity:0.3,data_analysis:0.3,organization:0.6,stress_tolerance:0.6,learning:0.75,leadership:0.4,detail:0.7,structured:0.6,val_contribution:0.8,val_status:0.75,val_growth:0.7,ind_international:0.95},
+     negative:{val_salary:-0.2,competitive:-0.2,risk_seeking:-0.2},
+     threshold:{ind_international:0.7,written_expression:0.5},
+     salary:{tier1:"15000-40000",tier2:"12000-30000",tier3:"10000-20000"}, growth:"社会声望高，工作环境国际化，但岗位稀缺竞争激烈", path:"名校+外语+实习→JPO/UNV→正式职员/外交官→高级别职员",
+     overtimeLevel:0.3, stabilityType:"system", cityFit:["tier1"],
+     schoolReq:{minLevel:1, strictLevel:true, desc:"严格要求985/海外名校硕士，外语能力和实习经历是硬门槛"}},
+    {name:"房地产策划/文案", desc:"地产项目营销策划、案名/广告文案撰写、推广方案设计", category:"营销",
+     profile:{oral_expression:0.6,written_expression:0.85,logic:0.4,interpersonal:0.6,creativity:0.85,data_analysis:0.4,organization:0.6,stress_tolerance:0.75,learning:0.5,leadership:0.3,detail:0.5,flexible:0.7,competitive:0.6,val_salary:0.7,val_creativity:0.6,ind_marketing:0.85},
+     negative:{val_balance:-0.3,introversion:-0.2,val_stability:-0.2},
+     threshold:{creativity:0.5,written_expression:0.5,ind_marketing:0.4},
+     salary:{tier1:"10000-25000",tier2:"7000-18000",tier3:"5000-12000"}, growth:"受房地产周期影响大，行业下行期压力大但优秀策划人仍有市场", path:"策划助理→策划师→高级策划→策划总监→代理公司合伙人",
+     overtimeLevel:0.7, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:4, strictLevel:false, desc:"看创意能力和作品，学历非核心要求"}},
+    {name:"教培教研/课程设计", desc:"K12或成人教育机构从事课程开发、教学研究和内容体系搭建", category:"教育",
+     profile:{oral_expression:0.7,written_expression:0.8,logic:0.7,interpersonal:0.6,creativity:0.65,data_analysis:0.4,organization:0.7,stress_tolerance:0.5,learning:0.8,leadership:0.4,detail:0.75,depth_focus:0.7,structured:0.7,val_growth:0.7,val_creativity:0.5,val_contribution:0.6,ind_education:0.9},
+     negative:{risk_seeking:-0.2,competitive:-0.2},
+     threshold:{ind_education:0.5,written_expression:0.4,learning:0.4},
+     salary:{tier1:"10000-25000",tier2:"7000-18000",tier3:"5000-12000"}, growth:"双减后K12受限，成人教育和职业教育仍有空间", path:"教学经验→教研员→高级教研→教研总监/课程产品负责人",
+     overtimeLevel:0.5, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:3, strictLevel:false, desc:"看教学能力和学科功底，头部机构偏好211+"}},
+    {name:"高管助理/董秘", desc:"企业高管Executive Assistant或上市公司董事会秘书，处理核心事务", category:"企业管理",
+     profile:{oral_expression:0.65,written_expression:0.8,logic:0.6,interpersonal:0.75,creativity:0.2,data_analysis:0.5,organization:0.95,stress_tolerance:0.8,learning:0.75,leadership:0.4,detail:0.95,structured:0.85,rational_decision:0.7,val_salary:0.7,val_growth:0.7,val_status:0.6,ind_finance:0.4},
+     negative:{val_balance:-0.3,val_autonomy:-0.3,risk_seeking:-0.2},
+     threshold:{organization:0.6,detail:0.6,stress_tolerance:0.5},
+     salary:{tier1:"12000-35000",tier2:"8000-22000",tier3:"6000-15000"}, growth:"接触公司核心决策层，视野开阔，可转型为管理岗或投资岗", path:"行政/秘书→总裁助理→高管EA→董秘/转型管理层",
+     overtimeLevel:0.7, stabilityType:"market", cityFit:["tier1","tier2"],
+     schoolReq:{minLevel:2, strictLevel:false, desc:"上市公司董秘偏好985/211，高管EA看综合能力"}}
+    ];
+
+    // ====== 评分算法（优化版：加权+阈值惩罚+负向匹配+sigmoid放大）======
+    function calculateScores() {
+        const dims = {};
+        const dimCounts = {};
+        const SCENARIO_WEIGHT = 1.5; // 情境题权重加大
+        for (let i = 0; i < questions.length; i++) {
+            const q = questions[i];
+            const ans = answers[q.id];
+            if (ans === undefined) continue;
+            if (q.type === 'likert' && q.dimension) {
+                if (!dims[q.dimension]) { dims[q.dimension] = 0; dimCounts[q.dimension] = 0; }
+                dims[q.dimension] += ans;
+                dimCounts[q.dimension]++;
+            }
+            if (q.type === 'select' && q.dimensions) {
+                const optIdx = ans;
+                const weight = (q.section === '情境判断') ? SCENARIO_WEIGHT : 1;
+                Object.keys(q.dimensions).forEach(dim => {
+                    if (!dims[dim]) { dims[dim] = 0; dimCounts[dim] = 0; }
+                    const baseScore = (optIdx === 0) ? 4.5 : (optIdx === 1) ? 3.5 : (optIdx === 2) ? 2.5 : 1.5;
+                    dims[dim] += baseScore * q.dimensions[dim] * weight;
+                    dimCounts[dim] += weight;
+                });
+            }
+        }
+        const normalized = {};
+        Object.keys(dims).forEach(d => {
+            normalized[d] = dimCounts[d] > 0 ? Math.min((dims[d] / dimCounts[d]) / 5, 1) : 0.5;
+        });
+        return normalized;
+    }
+
+    function getSchoolLevel() {
+        const ans = answers[1001];
+        if (ans === undefined) return 0;
+        const levelMap = [1, 2, 3, 4, 5, 6, 1, 2, 3, 4];
+        return levelMap[ans] || 0;
+    }
+
+    function getUndergradLevel() {
+        const ans = answers[1002];
+        if (ans === undefined || ans === 0) return 0;
+        const levelMap = [0, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4];
+        return levelMap[ans] || 0;
+    }
+
+    function isOverseasTop(ansIdx) {
+        return ansIdx === 6;
+    }
+
+    function matchCareers(scores) {
+        // 获取用户硬性条件
+        const overtimeAns = answers[6]; // 0=完全不接受, 1=偶尔, 2=适度, 3=高强度
+        const systemAns = answers[9]; // 0=非常想体制内, 1=可以考虑, 2=无所谓, 3=不考虑
+        const userOvertimeTolerance = overtimeAns !== undefined ? overtimeAns / 3 : 0.5;
+        const wantSystem = systemAns !== undefined ? systemAns : 2;
+
+        return careerModels.map(career => {
+            let totalScore = 0;
+            let totalWeight = 0;
+
+            // 1. 加权维度匹配（关键维度权重更高）
+            Object.keys(career.profile).forEach(dim => {
+                const requirement = career.profile[dim];
+                const userScore = scores[dim] !== undefined ? scores[dim] : 0.5;
+                const isKeyDim = career.threshold && career.threshold[dim] !== undefined;
+                const weight = isKeyDim ? 2.0 : (requirement >= 0.8 ? 1.5 : 1.0);
+                const diff = 1 - Math.abs(userScore - requirement);
+                const match = diff * diff;
+                totalScore += match * weight * requirement;
+                totalWeight += weight * requirement;
+            });
+
+            let baseScore = totalWeight > 0 ? totalScore / totalWeight : 0.5;
+
+            // 2. 阈值惩罚：关键维度低于阈值则惩罚
+            if (career.threshold) {
+                Object.entries(career.threshold).forEach(([dim, minVal]) => {
+                    const userVal = scores[dim] !== undefined ? scores[dim] : 0.5;
+                    if (userVal < minVal) {
+                        const penalty = 0.5 + 0.5 * (userVal / minVal);
+                        baseScore *= penalty;
+                    }
+                });
+            }
+
+            // 3. 负向匹配：某些维度过高会降低匹配度
+            if (career.negative) {
+                Object.entries(career.negative).forEach(([dim, negWeight]) => {
+                    const userVal = scores[dim] !== undefined ? scores[dim] : 0.5;
+                    if (userVal > 0.6) {
+                        baseScore += negWeight * (userVal - 0.5) * 0.5;
+                    }
+                });
+            }
+
+            // 4. 超越加分：关键维度远超要求
+            Object.keys(career.profile).forEach(dim => {
+                const req = career.profile[dim];
+                const userVal = scores[dim] !== undefined ? scores[dim] : 0.5;
+                if (req >= 0.7 && userVal > req + 0.15) {
+                    baseScore += 0.02 * (userVal - req);
+                }
+            });
+
+            // 5. 硬性筛选：加班容忍度
+            if (career.overtimeLevel !== undefined && overtimeAns !== undefined) {
+                if (career.overtimeLevel > 0.7 && userOvertimeTolerance < 0.3) {
+                    baseScore *= 0.55;
+                } else if (career.overtimeLevel > 0.5 && userOvertimeTolerance < 0.15) {
+                    baseScore *= 0.7;
+                }
+            }
+
+            // 6. 硬性筛选：体制内偏好
+            if (career.stabilityType === 'system' && wantSystem === 3) {
+                baseScore *= 0.6;
+            }
+            if (career.stabilityType === 'market' && wantSystem === 0) {
+                baseScore *= 0.65;
+            }
+
+            // 7. 学校层次匹配
+            if (career.schoolReq) {
+                const schoolLevel = getSchoolLevel();
+                const undergradLevel = getUndergradLevel();
+                if (schoolLevel > 0 && schoolLevel > career.schoolReq.minLevel) {
+                    let penalty = career.schoolReq.strictLevel ? 0.4 : 0.75;
+                    if (undergradLevel > 0 && undergradLevel > schoolLevel) {
+                        penalty = 1 - (1 - penalty) * 0.5;
+                    }
+                    baseScore *= penalty;
+                }
+                if (schoolLevel <= 2 && isOverseasTop(answers[1001]) && career.category === '国际') {
+                    baseScore *= 1.1;
+                }
+            }
+
+            // 8. Sigmoid区分度放大
+            const k = 10;
+            const mid = 0.55;
+            let sigmoidScore = 1 / (1 + Math.exp(-k * (baseScore - mid)));
+            const matchScore = Math.min(95, Math.max(18, Math.round(sigmoidScore * 80 + 15)));
+
+            return { ...career, matchScore };
+        }).sort((a, b) => b.matchScore - a.matchScore);
+    }
+    // END SCORING
+
+    // ====== 报告生成 ======
+    function generateReport() {
+        const scores = calculateScores();
+        const careers = matchCareers(scores);
+        const top5 = careers.slice(0, 5);
+        const findQ = (qid) => questions.find(q => q.id === qid);
+        const userInfo = {
+            education: answers[1] !== undefined ? findQ(1).options[answers[1]] : '未填写',
+            major: answers[2] !== undefined ? findQ(2).options[answers[2]] : '未填写',
+            city: answers[3] !== undefined ? findQ(3).options[answers[3]] : '未填写',
+            salary: answers[4] !== undefined ? findQ(4).options[answers[4]] : '未填写',
+            experience: answers[5] !== undefined ? findQ(5).options[answers[5]] : '未填写'
+        };
+        const cityTier = answers[3] === 0 ? 'tier1' : answers[3] === 1 ? 'tier2' : 'tier3';
+
+        const abilityDims = [
+            {key:'oral_expression', label:'口头表达'},
+            {key:'written_expression', label:'书面表达'},
+            {key:'logic', label:'逻辑思维'},
+            {key:'interpersonal', label:'人际沟通'},
+            {key:'creativity', label:'创意想象'},
+            {key:'data_analysis', label:'数据分析'},
+            {key:'organization', label:'组织协调'},
+            {key:'stress_tolerance', label:'抗压能力'},
+            {key:'learning', label:'学习适应'},
+            {key:'leadership', label:'领导力'},
+            {key:'detail', label:'细节关注'}
+        ];
+
+        let html = '';
+        // 1. 个人画像
+        html += `<div class="report-section">
+            <h2>一、个人画像总结</h2>
+            <p>基于您的测试结果，以下是您的综合职业画像：</p>
+            <p><strong>学历背景：</strong>${userInfo.education} · ${userInfo.major}</p>
+            <p><strong>期望城市：</strong>${userInfo.city}</p>
+            <p><strong>工作经验：</strong>${userInfo.experience}</p>
+            <p style="margin-top:15px">${generatePersonalSummary(scores, userInfo)}</p>
+        </div>`;
+
+        // 2. 能力雷达图
+        html += `<div class="report-section">
+            <h2>二、能力雷达图</h2>
+            <div class="radar-chart-container"><canvas id="radarChart"></canvas></div>
+            <div style="margin-top:20px">
+            ${abilityDims.map(d => {
+                const val = Math.round((scores[d.key] || 0.5) * 100);
+                return `<div style="margin:8px 0"><span style="display:inline-block;width:80px">${d.label}</span>
+                <div class="salary-bar" style="display:inline-block;width:calc(100% - 130px);vertical-align:middle">
+                <div class="salary-fill" style="width:${val}%">${val}分</div></div></div>`;
+            }).join('')}
+            </div>
+        </div>`;
+
+        // 3. TOP5 推荐
+        html += `<div class="report-section"><h2>三、TOP 5 推荐职业方向</h2>`;
+        top5.forEach((c, i) => {
+            html += `<div class="career-card">
+                <span class="rank">${i+1}</span>
+                <span class="career-name">${c.name}</span>
+                <span class="match-score">${c.matchScore}%</span>
+                <div class="career-detail">
+                    <p><strong>职业描述：</strong>${c.desc}</p>
+                    <p><strong>匹配原因：</strong>${getMatchReason(c, scores)}</p>
+                    <p><strong>薪资范围（${userInfo.city}）：</strong>${c.salary[cityTier]}元/月</p>
+                    <p><strong>发展前景：</strong>${c.growth}</p>
+                    <p><strong>入行路径：</strong>${c.path}</p>
+                </div>
+            </div>`;
+        });
+        html += `</div>`;
+
+        // 3.5. 学历匹配度提示
+        html += `<div class="report-section"><h2>三（附）、学历匹配度提示</h2>`;
+        html += generateSchoolMatchSection(top5);
+        html += `</div>`;
+
+        // 4. 城市就业建议
+        html += `<div class="report-section"><h2>四、城市就业建议</h2>
+            <p>基于您选择的 <strong>${userInfo.city}</strong>，以下是该城市级别适合您的岗位分析：</p>
+            ${getCityAdvice(cityTier, top5)}
+        </div>`;
+
+        // 5. 薪资预期对照
+        html += `<div class="report-section"><h2>五、薪资预期对照</h2>
+            <p><strong>您的期望薪资：</strong>${userInfo.salary}</p>
+            <div style="margin-top:15px">
+            ${top5.map(c => `<div style="margin:10px 0">
+                <strong>${c.name}：</strong>${c.salary[cityTier]}
+                ${getSalaryMatch(userInfo.salary, c.salary[cityTier])}
+            </div>`).join('')}
+            </div>
+        </div>`;
+
+        // 6. 短期行动计划
+        html += `<div class="report-section"><h2>六、短期行动计划（3-6个月）</h2>
+            <ul class="action-list">${getShortTermPlan(top5[0], scores, userInfo)}</ul>
+        </div>`;
+
+        // 7. 长期发展路径
+        html += `<div class="report-section"><h2>七、长期发展路径（3-5年）</h2>
+            ${getLongTermPlan(top5[0], scores)}
+        </div>`;
+
+        // 8. 需要提升的能力
+        html += `<div class="report-section"><h2>八、需要提升的能力</h2>
+            ${getGapAnalysis(top5[0], scores, abilityDims)}
+        </div>`;
+
+        // 9. 推荐学习资源
+        html += `<div class="report-section"><h2>九、推荐学习资源</h2>
+            ${getLearningResources(top5[0])}
+        </div>`;
+
+        html += `<button class="print-btn" onclick="window.print()">打印/保存报告</button>`;
+
+        document.getElementById('reportArea').innerHTML = html;
+        document.getElementById('reportArea').style.display = 'block';
+
+        setTimeout(() => renderRadarChart(scores, abilityDims), 100);
+    }
+
+    function generatePersonalSummary(scores, info) {
+        let traits = [];
+        if ((scores.oral_expression||0) > 0.7) traits.push('出色的口头表达能力');
+        if ((scores.written_expression||0) > 0.7) traits.push('优秀的文字功底');
+        if ((scores.logic||0) > 0.7) traits.push('严密的逻辑思维');
+        if ((scores.interpersonal||0) > 0.7) traits.push('较强的人际沟通能力');
+        if ((scores.creativity||0) > 0.7) traits.push('丰富的创造力');
+        if ((scores.leadership||0) > 0.7) traits.push('突出的领导潜质');
+        if ((scores.stress_tolerance||0) > 0.7) traits.push('良好的抗压能力');
+        if ((scores.organization||0) > 0.7) traits.push('出色的组织协调能力');
+        if (traits.length === 0) traits.push('综合素质均衡');
+        let style = '';
+        if ((scores.introversion||0) > 0.6) style = '您偏向内向沉稳的工作风格，擅长深度思考和独立工作。';
+        else if ((scores.extraversion||0) > 0.6) style = '您偏向外向活跃的工作风格，善于人际互动和团队协作。';
+        else style = '您在内外向之间保持平衡，能够灵活适应不同的工作场景。';
+        let values = '';
+        const valScores = {salary:scores.val_salary||0.5, balance:scores.val_balance||0.5, growth:scores.val_growth||0.5, stability:scores.val_stability||0.5, creativity:scores.val_creativity||0.5, contribution:scores.val_contribution||0.5};
+        const topVal = Object.entries(valScores).sort((a,b)=>b[1]-a[1])[0][0];
+        const valMap = {salary:'薪资回报',balance:'工作生活平衡',growth:'个人成长',stability:'职业稳定',creativity:'创造性表达',contribution:'社会贡献'};
+        values = `在职业价值观上，您最看重的是"${valMap[topVal]}"。`;
+        return `您是一位具有${traits.join('、')}的文科人才。${style}${values}`;
+    }
+
+    function getMatchReason(career, scores) {
+        const reasons = [];
+        const highDims = Object.entries(career.profile).filter(([k,v]) => v >= 0.8 && (scores[k]||0) >= 0.6);
+        highDims.slice(0,3).forEach(([k]) => {
+            const dimNames = {oral_expression:'口头表达',written_expression:'书面表达',logic:'逻辑思维',interpersonal:'人际沟通',creativity:'创意能力',data_analysis:'数据分析',organization:'组织协调',stress_tolerance:'抗压能力',learning:'学习能力',leadership:'领导力',detail:'细节关注度'};
+            if (dimNames[k]) reasons.push(`您的${dimNames[k]}与该职业要求高度匹配`);
+        });
+        if (reasons.length === 0) reasons.push('您的综合能力分布与该职业需求较为吻合');
+        return reasons.join('；') + '。';
+    }
+
+    function getCityAdvice(tier, top5) {
+        const advice = {
+            tier1: '一线城市岗位多、薪资高，竞争也更激烈。建议充分利用城市资源优势，积极拓展人脉。',
+            tier2: '新一线/二线城市生活成本较低，近年来产业转移带来大量机会，性价比高。',
+            tier3: '三线及以下城市体制内岗位和教育岗位相对丰富，适合追求稳定生活的人。'
+        };
+        return `<p>${advice[tier]}</p><p>推荐您在该城市重点关注：<strong>${top5.slice(0,3).map(c=>c.name).join('、')}</strong>等方向。</p>`;
+    }
+
+    function getSalaryMatch(expected, actual) {
+        const expMap = {'5000以下':4000,'5000-8000':6500,'8000-12000':10000,'12000-20000':16000,'20000-30000':25000,'30000以上':35000};
+        const expVal = expMap[expected] || 10000;
+        const actNums = actual.match(/\d+/g);
+        if (!actNums) return '';
+        const actAvg = (parseInt(actNums[0]) + parseInt(actNums[1])) / 2;
+        if (expVal <= parseInt(actNums[1]) && expVal >= parseInt(actNums[0])) return '<span style="color:#10B981"> ✓ 期望匹配</span>';
+        if (expVal > parseInt(actNums[1])) return '<span style="color:#F59E0B"> ⚠ 期望偏高</span>';
+        return '<span style="color:#10B981"> ✓ 轻松达到</span>';
+    }
+
+    function getShortTermPlan(topCareer, scores, info) {
+        const plans = [];
+        plans.push(`<li><strong>第1个月：</strong>深入了解"${topCareer.name}"行业现状，阅读至少5篇行业报告，关注3-5个行业公众号。</li>`);
+        plans.push(`<li><strong>第2个月：</strong>针对目标岗位要求，制定技能提升计划。重点补充${getWeakSkills(topCareer, scores)}方面的能力。</li>`);
+        plans.push(`<li><strong>第3个月：</strong>优化简历和作品集，突出与"${topCareer.name}"相关的经历和能力。开始投递或准备相关考试。</li>`);
+        plans.push(`<li><strong>第4个月：</strong>积极参加行业交流活动，建立至少3个行业内联系人。争取获得实习或项目机会。</li>`);
+        plans.push(`<li><strong>第5-6个月：</strong>进行模拟面试练习，总结行业知识。如已入职，快速适应并建立良好的第一印象。</li>`);
+        return plans.join('');
+    }
+
+    function getWeakSkills(career, scores) {
+        const gaps = [];
+        Object.entries(career.profile).forEach(([dim, req]) => {
+            if (req >= 0.7 && (scores[dim]||0.5) < 0.5) {
+                const names = {oral_expression:'口头表达',written_expression:'书面写作',logic:'逻辑分析',interpersonal:'人际沟通',creativity:'创意思维',data_analysis:'数据分析',organization:'项目管理',stress_tolerance:'压力管理',learning:'快速学习',leadership:'领导力',detail:'细节把控'};
+                if (names[dim]) gaps.push(names[dim]);
+            }
+        });
+        return gaps.length > 0 ? gaps.slice(0,2).join('和') : '综合能力';
+    }
+
+    function getLongTermPlan(topCareer, scores) {
+        return `<ul class="action-list">
+            <li><strong>第1年：</strong>完成入行过渡期，熟悉"${topCareer.name}"的核心工作流程和行业规则。建立扎实的专业基础。</li>
+            <li><strong>第2年：</strong>在核心技能上形成竞争优势，争取独立负责重要项目。开始建立个人专业品牌。</li>
+            <li><strong>第3年：</strong>进入发展加速期，考虑是否向管理方向或专家方向发展。拓展跨领域能力。</li>
+            <li><strong>第4-5年：</strong>成为团队骨干或领域专家。评估是否需要跳槽升级平台。参考路径：${topCareer.path}</li>
+        </ul>`;
+    }
+
+    function getGapAnalysis(topCareer, scores, abilityDims) {
+        let html = '<p>基于您的首选职业方向"' + topCareer.name + '"，以下是需要重点提升的能力：</p>';
+        const gaps = [];
+        abilityDims.forEach(d => {
+            const req = topCareer.profile[d.key] || 0;
+            const cur = scores[d.key] || 0.5;
+            if (req > 0.6 && cur < req - 0.15) {
+                gaps.push({label: d.label, current: Math.round(cur*100), required: Math.round(req*100), gap: Math.round((req-cur)*100)});
+            }
+        });
+        if (gaps.length === 0) {
+            html += '<p style="color:#10B981">您的能力分布与目标职业匹配度很高，继续保持即可！</p>';
+        } else {
+            gaps.sort((a,b) => b.gap - a.gap);
+            gaps.slice(0,4).forEach(g => {
+                html += `<div style="margin:12px 0;padding:10px;background:var(--bg);border-radius:10px">
+                    <strong>${g.label}</strong>：当前 ${g.current}分 → 目标 ${g.required}分（差距 ${g.gap}分）
+                    <div class="salary-bar" style="margin-top:5px"><div class="salary-fill" style="width:${g.current}%;background:${g.current>=g.required-10?'#10B981':'#F59E0B'}">${g.current}%</div></div>
+                </div>`;
+            });
+        }
+        return html;
+    }
+
+    function getLearningResources(topCareer) {
+        const resources = {
+            '中小学教师': {certs:['教师资格证','普通话等级证书'],courses:['教育心理学','课堂管理技巧','教学设计方法'],books:['《教育的目的》','《如何高效学习》','《正面管教》']},
+            '高校辅导员/行政': {certs:['教师资格证','心理咨询师证'],courses:['高等教育管理','学生事务管理','公文写作'],books:['《大学生心理健康教育》','《高等教育学》']},
+            '新媒体运营/内容编辑': {certs:['新媒体管理师','内容营销认证'],courses:['新媒体写作','短视频制作','数据分析基础','SEO优化'],books:['《爆款文案》','《增长黑客》','《内容算法》']},
+            '记者/编辑（传统媒体）': {certs:['记者证','编辑资格证'],courses:['深度报道写作','数据新闻','新闻摄影'],books:['《新闻的十大基本原则》','《华尔街日报是如何讲故事的》']},
+            '律师（律所诉讼/非诉）': {certs:['法律职业资格证（法考）','企业合规师'],courses:['民法实务','合同审查','法律检索'],books:['《法律思维导论》','《合同法研究》']},
+            '公务员（省市级机关）': {certs:['国考/省考通过'],courses:['行测备考','申论写作','结构化面试'],books:['《之江新语》','《公文写作金典》']},
+            '人力资源管理': {certs:['人力资源管理师','SHRM认证'],courses:['招聘与选拔','薪酬体系设计','组织行为学'],books:['《人力资源管理》','《奈飞文化手册》']},
+            '市场营销/品牌策划': {certs:['数字营销师','Google Analytics认证'],courses:['品牌战略','消费者行为学','数字营销'],books:['《定位》','《营销管理》','《疯传》']},
+            '出版编辑/文化策划': {certs:['出版专业资格证','编辑记者证'],courses:['图书编辑实务','选题策划','版权管理'],books:['《编辑力》','《文化产业概论》']},
+            '管理咨询顾问': {certs:['PMP项目管理','CFA/CPA（加分项）'],courses:['案例分析方法','商业模式分析','PPT报告制作'],books:['《金字塔原理》','《麦肯锡方法》','《学会提问》']},
+            '社会工作者/NGO从业者': {certs:['社会工作者证','心理咨询师'],courses:['社区工作方法','项目管理','筹款策略'],books:['《社会工作实务》','《非营利组织管理》']},
+            '互联网产品经理': {certs:['PMP','NPDP产品经理认证'],courses:['产品思维','用户研究方法','数据分析','Axure原型设计'],books:['《启示录》','《用户体验要素》','《俞军产品方法论》']},
+            '翻译/国际事务': {certs:['CATTI翻译证书','专八证书','联合国语言人才'],courses:['高级口译','本地化技术','跨文化沟通'],books:['《翻译的技巧》','《中式英语之鉴》']},
+            '心理咨询师/职业规划师': {certs:['心理咨询师证','生涯规划师认证'],courses:['CBT认知行为疗法','心理测评技术','咨询伦理'],books:['《心理咨询与治疗》','《生涯咨询与辅导》']},
+            '企业培训师/教学设计师': {certs:['企业培训师','国际认证培训师(ICF)'],courses:['课程开发技术','TTT培训','学习体验设计'],books:['《培训师21项技能修炼》','《将培训转化为商业结果》']},
+            '行政管理/综合管理': {certs:['行政管理师','办公软件高级证书'],courses:['公文写作','项目管理基础','职场沟通'],books:['《高效能人士的七个习惯》','《卓有成效的管理者》']},
+            '银行客户经理': {certs:['银行从业资格证','基金从业资格证','AFP/CFP'],courses:['客户关系管理','金融产品知识','合规与风控'],books:['《银行客户经理营销技巧》','《零售银行转型']},
+            '会计/审计（四大及企业）': {certs:['CPA注册会计师','ACCA','初级/中级会计师'],courses:['审计实务','税法','财务报表分析'],books:['《审计学》','《会计准则解读》','《让数字说话》']},
+            '证券/基金研究员': {certs:['CFA','证券从业资格证'],courses:['行业研究方法','财务建模','估值分析'],books:['《证券分析》','《投资最重要的事》','《手把手教你读财报》']},
+            '博物馆/文化遗产管理': {certs:['文物博物馆专业资格','导游证'],courses:['策展实务','文物保护技术','博物馆学'],books:['《博物馆学概论》','《中国文化遗产保护概论》']},
+            '影视策划/编剧': {certs:['广播电视编辑记者证'],courses:['编剧基础','影视产业分析','IP改编实务'],books:['《救猫咪》','《故事》','《编剧的艺术》']},
+            '游戏文案/剧情策划': {certs:['无硬性证书要求'],courses:['游戏叙事设计','世界观架构','交互叙事'],books:['《游戏设计艺术》','《千面英雄》','《叙事经济学》']},
+            '自媒体创业/个人IP': {certs:['新媒体管理师（加分项）'],courses:['个人品牌打造','短视频运营','知识付费产品设计','私域流量运营'],books:['《影响力》','《一个人的商业模式》']},
+            '电商运营': {certs:['电子商务师','数据分析师'],courses:['店铺运营','直播电商','供应链管理','数据分析'],books:['《增长黑客》','《电商运营之道》']},
+            '自由撰稿人/独立作者': {certs:['无硬性证书要求'],courses:['非虚构写作','出版流程','自媒体写作'],books:['《写作这回事》','《成为作家》','《风格感觉》']},
+            '事业单位（文职）': {certs:['事业单位考试通过','相关专业技术资格'],courses:['公共基础知识','职业能力测验','公文写作'],books:['《事业单位考试一本通》']},
+            '选调生': {certs:['选调生考试通过'],courses:['行测申论','基层工作方法','群众工作'],books:['《之江新语》','《习近平的七年知青岁月》','《乡土中国》']},
+            '国企行政/党务/文宣': {certs:['党员身份（加分）','公文写作能力'],courses:['企业党建','公文材料写作','企业文化建设'],books:['《公文写作金典》','《企业文化概论》']},
+            '外贸业务员/跨境电商': {certs:['报关员证','跨境电商师','BEC商务英语'],courses:['国际贸易实务','跨境电商运营','外贸英语'],books:['《国际贸易理论与实务》','《跨境电商实操指南》']},
+            '国际组织/使馆工作': {certs:['联合国YPP/JPO','外交部遴选'],courses:['国际关系','跨文化沟通','多边外交'],books:['《联合国与国际组织》','《外交学概论》']},
+            '房地产策划/文案': {certs:['房地产经纪人证（加分）'],courses:['地产营销策划','广告文案','项目定位'],books:['《定位》','《文案创作完全手册》']},
+            '教培教研/课程设计': {certs:['教师资格证','课程设计师认证'],courses:['教学设计','学习科学','教育评估'],books:['《追求理解的教学设计》','《教学设计原理》']},
+            '高管助理/董秘': {certs:['董事会秘书资格证','PMP项目管理'],courses:['公司治理','信息披露','高管沟通'],books:['《董事会秘书实务》','《高效能助理》']}
+        };
+        const res = resources[topCareer.name] || resources['行政管理/综合管理'];
+        let html = '<h3>推荐证书</h3><div style="margin:10px 0">' + res.certs.map(c => `<span class="career-tag">${c}</span>`).join(' ') + '</div>';
+        html += '<h3>推荐课程方向</h3><ul>' + res.courses.map(c => `<li>${c}</li>`).join('') + '</ul>';
+        html += '<h3>推荐书籍</h3><ul>' + res.books.map(b => `<li>${b}</li>`).join('') + '</ul>';
+        return html;
+    }
+
+    function generateSchoolMatchSection(top5) {
+        const userLevel = getSchoolLevel();
+        if (userLevel === 0) {
+            return `<p>未填写学校层次信息，无法进行学历匹配分析。</p>`;
+        }
+        const levelNames = {1:'985/双一流A类',2:'211/双一流B类',3:'普通一本',4:'普通二本',5:'民办本科/专科及其他'};
+        const userLevelName = levelNames[Math.min(userLevel, 5)] || '未知';
+        const competitive = [];
+        const barrier = [];
+        top5.forEach(c => {
+            if (!c.schoolReq) { competitive.push(c); return; }
+            if (userLevel <= c.schoolReq.minLevel) {
+                competitive.push(c);
+            } else {
+                barrier.push(c);
+            }
+        });
+        let html = `<p>您的学校层次：<strong>${userLevelName}</strong></p>`;
+        if (competitive.length > 0) {
+            html += `<h3 style="color:#10B981">✓ 学历具有竞争力</h3>`;
+            competitive.forEach(c => {
+                const desc = c.schoolReq ? c.schoolReq.desc : '无特殊要求';
+                html += `<p style="padding:8px 12px;background:#ECFDF5;border-radius:8px;margin:6px 0">`;
+                html += `<strong>${c.name}</strong>（${desc}）</p>`;
+            });
+        }
+        if (barrier.length > 0) {
+            html += `<h3 style="color:#F59E0B">⚠ 可能面临学历门槛</h3>`;
+            barrier.forEach(c => {
+                const desc = c.schoolReq ? c.schoolReq.desc : '';
+                const strict = c.schoolReq && c.schoolReq.strictLevel ? '【硬性门槛】' : '【软性偏好】';
+                html += `<p style="padding:8px 12px;background:#FEF3C7;border-radius:8px;margin:6px 0">`;
+                html += `<strong>${c.name}</strong> ${strict} ${desc}</p>`;
+            });
+            html += `<div style="margin-top:15px;padding:12px;background:var(--bg);border-radius:10px;border-left:3px solid #F59E0B">`;
+            html += `<strong>建议：</strong>`;
+            html += `<ul style="margin:8px 0;padding-left:20px">`;
+            html += `<li>考研/考博至更高层次院校可显著提升竞争力</li>`;
+            html += `<li>海外硕士（QS前100）也可有效突破学历门槛</li>`;
+            html += `<li>积累优质实习/工作经验可部分弥补学历差距</li>`;
+            html += `<li>考取高含金量证书（法考/CPA/CFA等）增加筹码</li>`;
+            html += `</ul></div>`;
+        }
+        return html;
+    }
+
+    function renderRadarChart(scores, abilityDims) {
+        const ctx = document.getElementById('radarChart');
+        if (!ctx) return;
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: abilityDims.map(d => d.label),
+                datasets: [{
+                    label: '能力得分',
+                    data: abilityDims.map(d => Math.round((scores[d.key]||0.5)*100)),
+                    backgroundColor: 'rgba(91,79,196,0.2)',
+                    borderColor: 'rgba(91,79,196,1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(139,92,246,1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: { r: { beginAtZero: true, max: 100, ticks: { stepSize: 20 } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    // ====== UI 交互逻辑 ======
+    function startTest() {
+        document.getElementById('landingPage').classList.add('hidden');
+        document.getElementById('questionArea').classList.remove('hidden');
+        document.getElementById('progressWrapper').classList.remove('hidden');
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const q = questions[currentQuestion];
+        const card = document.getElementById('questionCard');
+        let html = `<div class="question-section">${q.section}</div>
+            <div class="question-title"><span class="question-number">第${currentQuestion+1}题 / ${questions.length}题</span> ${q.title}</div>`;
+        if (q.type === 'select') {
+            html += '<div class="options">';
+            q.options.forEach((opt, i) => {
+                const sel = answers[q.id] === i ? 'selected' : '';
+                html += `<button class="option-btn ${sel}" onclick="selectOption(${q.id},${i})">${opt}</button>`;
+            });
+            html += '</div>';
+        } else if (q.type === 'likert') {
+            html += `<div class="likert-scale"><span class="label-left">${q.labels[0]}</span><div class="likert-options">`;
+            for (let i = 1; i <= 5; i++) {
+                const sel = answers[q.id] === i ? 'selected' : '';
+                html += `<button class="likert-btn ${sel}" onclick="selectOption(${q.id},${i})">${i}</button>`;
+            }
+            html += `</div><span class="label-right">${q.labels[1]}</span></div>`;
+        } else if (q.type === 'multi') {
+            html += '<div class="tag-container">';
+            const cur = answers[q.id] || [];
+            q.options.forEach((opt, i) => {
+                const sel = cur.includes(i) ? 'selected' : '';
+                html += `<button class="tag-btn ${sel}" onclick="toggleTag(${q.id},${i})">${opt}</button>`;
+            });
+            html += '</div>';
+        }
+        card.innerHTML = html;
+        updateProgress();
+        updateNavButtons();
+    }
+
+    function selectOption(qId, value) { answers[qId] = value; renderQuestion(); }
+    function toggleTag(qId, idx) {
+        if (!answers[qId]) answers[qId] = [];
+        const i = answers[qId].indexOf(idx);
+        if (i > -1) answers[qId].splice(i, 1); else answers[qId].push(idx);
+        renderQuestion();
+    }
+    function nextQuestion() {
+        if (currentQuestion < questions.length - 1) { currentQuestion++; renderQuestion(); window.scrollTo({top:0,behavior:'smooth'}); }
+        else submitTest();
+    }
+    function prevQuestion() {
+        if (currentQuestion > 0) { currentQuestion--; renderQuestion(); window.scrollTo({top:0,behavior:'smooth'}); }
+    }
+    function updateProgress() {
+        const answered = Object.keys(answers).length;
+        const pct = Math.round((answered / TOTAL_QUESTIONS) * 100);
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressCount').textContent = `${answered}/${TOTAL_QUESTIONS}`;
+        document.getElementById('progressSection').textContent = questions[currentQuestion].section;
+    }
+    function updateNavButtons() {
+        document.getElementById('btnPrev').style.visibility = currentQuestion === 0 ? 'hidden' : 'visible';
+        const btn = document.getElementById('btnNext');
+        if (currentQuestion === questions.length - 1) { btn.textContent = '提交测试'; btn.className = 'btn btn-submit'; }
+        else { btn.textContent = '下一题'; btn.className = 'btn btn-next'; }
+    }
+    function submitTest() {
+        const answered = Object.keys(answers).length;
+        if (answered < 100) { if (!confirm(`您还有${TOTAL_QUESTIONS-answered}道题未作答，建议完成以获得准确结果。确定提交吗？`)) return; }
+        document.getElementById('questionArea').classList.add('hidden');
+        document.getElementById('progressWrapper').classList.add('hidden');
+        document.getElementById('loadingOverlay').classList.add('active');
+        setTimeout(() => { generateReport(); document.getElementById('loadingOverlay').classList.remove('active'); window.scrollTo({top:0,behavior:'smooth'}); }, 2000);
+    }
+    </script>
+</body>
+</html>
